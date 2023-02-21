@@ -103,10 +103,10 @@ export const ShowPerformance = (props: { pdkey: String; pdstatus: String }) => {
 
     if (Perfor > 0) {
       Perfor = parseFloat(
-        Number((Perfor + PerforPro) / PerData[0].proamount).toFixed(0)
+        Number((Perfor + PerforPro) / PerData[0]?.proamount).toFixed(0)
       );
     } else {
-      Perfor = parseFloat(Number((Perfor + PerforPro) / PerData[0].proamount).toFixed(0));
+      Perfor = parseFloat(Number((Perfor + PerforPro) / PerData[0]?.proamount).toFixed(0));
     }
 
     if (isNaN(Perfor)) Perfor = 0;
