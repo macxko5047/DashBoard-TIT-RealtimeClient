@@ -3,13 +3,15 @@ import GaugeChart from "react-gauge-chart";
 import { ShowProgressWork } from "./ShowProgressWork";
 import supabase from "./supabase";
 
-export const ShowPerformance = (props: { pdkey: String, pdstatus: String }) => {
+export const ShowPerformance = (props: { pdkey: String; pdstatus: String }) => {
   const { pdkey, pdstatus } = props;
   const [PerData, SetPerData] = useState<any>([]);
-  const Today = new Date().toISOString().slice(0, 10);
-  const lineunit = 'AHPB-01';
-  const [ShowProgress, SetShowProgress] = useState<any>("");
+  console.log("proamount", PerData);
 
+  const Today = new Date().toISOString().slice(0, 10);
+  const lineunit = "AHPB-01";
+  const [ShowProgress, SetShowProgress] = useState<any>("");
+  const [dataPer, setDataPer] = useState<any>(0);
   const ProductionHistoryP = supabase
     .channel("custom-perf-channel")
     .on(
@@ -18,7 +20,7 @@ export const ShowPerformance = (props: { pdkey: String, pdstatus: String }) => {
         event: "*",
         schema: "public",
         table: "Production_history",
-        filter: "Production_unit=eq."+lineunit,
+        filter: "Production_unit=eq." + lineunit,
       },
       (payload) => {
         fetchData();
@@ -31,20 +33,20 @@ export const ShowPerformance = (props: { pdkey: String, pdstatus: String }) => {
     const { data, error } = await supabase.rpc("showoeeline", {
       prounit: lineunit,
       pdate: Today,
-      pstatus: pdstatus
+      pstatus: pdstatus,
     });
- 
+
     if (!error) {
       SetPerData(data);
     }
   };
- 
+
   useEffect(() => {
     const fetchDataPer = async () => {
       const { data, error } = await supabase.rpc("showoeeline", {
         prounit: lineunit,
         pdate: Today,
-        pstatus: pdstatus
+        pstatus: pdstatus,
       });
       if (!error) {
         SetPerData(data);
@@ -52,7 +54,7 @@ export const ShowPerformance = (props: { pdkey: String, pdstatus: String }) => {
     };
     fetchDataPer();
   }, []);
-  
+
   //*** */
 
   const fetchShowProgress = async () => {
@@ -79,48 +81,60 @@ export const ShowPerformance = (props: { pdkey: String, pdstatus: String }) => {
   let Perfor = 0;
   let Ava = 0;
   let AvaTemp = 0;
-  if(ShowProgress.length>0){
-    AvaTemp = (Number(PerData[0]?.runtime)+(ShowProgress[0]?.duration - ShowProgress[0]?.downtime)) / (Number(PerData[0]?.duration)+ShowProgress[0]?.duration);
-    Ava = parseFloat(Number(AvaTemp*100).toFixed(0));
+
+  if (ShowProgress.length > 0) {
+    AvaTemp =
+      (Number(PerData[0]?.runtime) +
+        (ShowProgress[0]?.duration - ShowProgress[0]?.downtime)) /
+      (Number(PerData[0]?.duration) + ShowProgress[0]?.duration);
+    Ava = parseFloat(Number(AvaTemp * 100).toFixed(0));
     if (isNaN(Ava)) Ava = 0;
 
     Perfor = parseFloat(Number(PerData[0]?.performance).toFixed(0));
-    let PerforPro = (ShowProgress[0]?.std * (ShowProgress[0]?.okqty + ShowProgress[0]?.ngqty)) / ((ShowProgress[0]?.duration - ShowProgress[0]?.downtime));
+
+    let PerforPro =
+      (ShowProgress[0]?.std *
+        (ShowProgress[0]?.okqty + ShowProgress[0]?.ngqty)) /
+      (ShowProgress[0]?.duration - ShowProgress[0]?.downtime);
     if (isNaN(PerforPro)) PerforPro = 0;
 
-    if(Perfor>0){
-      Perfor = parseFloat(Number((Perfor+PerforPro)/2).toFixed(0)); 
-    }else{
-      Perfor = parseFloat(Number((Perfor+PerforPro)).toFixed(0)); 
+    if (Perfor > 0) {
+      Perfor = parseFloat(
+        Number((Perfor + PerforPro) / PerData[0].proamount).toFixed(0)
+      );
+    } else {
+      // Perfor = parseFloat(Number(Perfor + PerforPro).toFixed(0));
     }
-    
+
     if (isNaN(Perfor)) Perfor = 0;
-  }else{
-    AvaTemp = Number(PerData[0]?.runtime)/Number(PerData[0]?.duration);
-    Ava = parseFloat(Number(AvaTemp*100).toFixed(0));
+  } else {
+    AvaTemp = Number(PerData[0]?.runtime) / Number(PerData[0]?.duration);
+    Ava = parseFloat(Number(AvaTemp * 100).toFixed(0));
     if (isNaN(Ava)) Ava = 0;
 
     Perfor = parseFloat(Number(PerData[0]?.performance).toFixed(0));
     if (isNaN(Perfor)) Perfor = 0;
   }
- 
+  console.log("Perfor", Perfor);
+
   return (
     <div>
       <div className="NameGauge">Performance</div>
       <GaugeChart
         id="gauge-chart2"
         nrOfLevels={10}
-        percent={Perfor/100}
+        percent={Perfor / 100}
         colors={["#EA4228", "#5BE12C"]}
         needleBaseColor={"#FFFFFF"}
         needleColor={"#FFFFFF"}
         textColor={"#FFFFFF "}
+        formatTextValue={(value) => `${parseFloat(Number(value).toFixed(0))}%`}
       />{" "}
       <div className="NameGauge">Availability</div>
       <GaugeChart
         id="gauge-chart3"
         nrOfLevels={10}
-        percent={Ava/100}
+        percent={Ava / 100}
         colors={["#EA4228", "#5BE12C"]}
         needleBaseColor={"#FFFFFF"}
         needleColor={"#FFFFFF"}

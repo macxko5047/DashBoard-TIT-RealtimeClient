@@ -14,7 +14,39 @@ export const ShowWO = () => {
   const mounted = useRef(false);
   const [GetWoLine, SetWoLine] = useState<any>([]);
   const Today = new Date().toISOString().slice(0, 10);
-  const lineunit = 'AHPB-01';
+  const lineunit = "AHPB-01";
+
+  const ProductionHistory = supabase
+    .channel("custom-filter-channel")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "Production_history",
+        filter: "Production_unit=eq." + lineunit,
+      },
+      (payload) => {
+        console.log("Change received!", payload);
+        // SetWoLine((pre: any) => [...pre, payload.new]);
+        fetchReload();
+      }
+    )
+    .subscribe();
+
+  const fetchReload = async () => {
+    const { data, error } = await supabase
+      .from("Production_history")
+      .select(
+        "Work_order_id,Item_number,Availability_percent,Performance_percent,Quality_percent,OEE_percent"
+      )
+      .eq("Production_unit", lineunit)
+      .eq("Production_date", Today)
+      .order("Begin_time");
+    if (!error) {
+      SetWoLine(data);
+    }
+  };
 
   useEffect(() => {
     mounted.current = true;
