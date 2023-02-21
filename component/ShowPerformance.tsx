@@ -12,6 +12,8 @@ export const ShowPerformance = (props: { pdkey: String; pdstatus: String }) => {
   const lineunit = "AHPB-01";
   const [ShowProgress, SetShowProgress] = useState<any>("");
   const [dataPer, setDataPer] = useState<any>(0);
+  console.log("dataPer", dataPer);
+
   const ProductionHistoryP = supabase
     .channel("custom-perf-channel")
     .on(
@@ -103,7 +105,7 @@ export const ShowPerformance = (props: { pdkey: String; pdstatus: String }) => {
         Number((Perfor + PerforPro) / PerData[0].proamount).toFixed(0)
       );
     } else {
-      // Perfor = parseFloat(Number(Perfor + PerforPro).toFixed(0));
+      Perfor = parseFloat(Number(Perfor + PerforPro).toFixed(0));
     }
 
     if (isNaN(Perfor)) Perfor = 0;
@@ -116,6 +118,22 @@ export const ShowPerformance = (props: { pdkey: String; pdstatus: String }) => {
     if (isNaN(Perfor)) Perfor = 0;
   }
   console.log("Perfor", Perfor);
+  useEffect(() => {
+    let PerforPro =
+      (ShowProgress[0]?.std *
+        (ShowProgress[0]?.okqty + ShowProgress[0]?.ngqty)) /
+      (ShowProgress[0]?.duration - ShowProgress[0]?.downtime);
+    const Perfor = parseFloat(Number(PerData[0]?.performance).toFixed(0));
+
+    const fetperformance = async () => {
+      setDataPer(
+        parseFloat(
+          Number((Perfor + PerforPro) / PerData[0].proamount).toFixed(0)
+        )
+      );
+    };
+    fetperformance;
+  }, [PerData]);
 
   return (
     <div>

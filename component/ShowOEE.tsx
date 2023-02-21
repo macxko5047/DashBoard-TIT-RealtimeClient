@@ -152,7 +152,9 @@ export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
       if (isNaN(PerforPro)) PerforPro = 0;
 
       if (Perfor > 0) {
-        Perfor = parseFloat(Number((Perfor + PerforPro) / 2).toFixed(0));
+        Perfor = parseFloat(
+          Number((Perfor + PerforPro) / Oeedata[0].proamount).toFixed(0)
+        );
       } else {
         Perfor = parseFloat(Number(Perfor + PerforPro).toFixed(0));
       }
