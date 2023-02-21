@@ -1,13 +1,21 @@
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import GaugeChart from "react-gauge-chart";
 import supabase from "./supabase";
 
-export const ShowOEE = (props: { pdkey: String, pdstatus: String }) => {
+export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
+  const router = useRouter();
+  const { linename } = router.query || "AHPB-01";
+
+  console.log({ linename });
   const { pdkey, pdstatus } = props;
   const [Oeedata, SetOeeData] = useState<any>([]);
   const Today = new Date().toISOString().slice(0, 10);
-  const lineunit = 'AHPB-01';
-  const [ShowProgress, SetShowProgress] = useState<any>("");
+  const lineunit = "AHPB-01";
+  const [showProgress, setShowProgress] = useState<any>(null);
+  const [showBeforeProgress, setShowBeforeProgress] = useState<any>(null);
+  const [quality, setQuality] = useState(0);
+  const [oeePercent, setOeePecent] = useState(0);
 
   const ProductionHistory = supabase
     .channel("oee-channel")
@@ -17,7 +25,7 @@ export const ShowOEE = (props: { pdkey: String, pdstatus: String }) => {
         event: "*",
         schema: "public",
         table: "Production_history",
-        filter: "Production_unit=eq."+lineunit,
+        filter: "Production_unit=eq." + lineunit,
       },
       (payload) => {
         fetchDataOEE();
@@ -30,11 +38,84 @@ export const ShowOEE = (props: { pdkey: String, pdstatus: String }) => {
     const { data, error } = await supabase.rpc("showoeeline", {
       prounit: lineunit,
       pdate: Today,
-      pstatus: pdstatus
+      pstatus: pdstatus,
     });
     if (!error) {
       SetOeeData(data);
     }
+  };
+
+  const Summary = () => {
+    let Perfor = 0;
+    let Ava = 0;
+    let AvaTemp = 0;
+    let Quality = 0;
+    let OeePercent = 0;
+
+    console.log({ showProgress });
+    if (showProgress && showBeforeProgress) {
+      const CurrentRuntime = showProgress.duration - showProgress.downtime;
+      const CurrentDuration = showProgress.duration;
+      const BeforeDuration = showBeforeProgress.duration;
+      const BeforeRuntime = showBeforeProgress.runtime;
+
+      AvaTemp =
+        (CurrentRuntime + BeforeRuntime) / (CurrentDuration + BeforeDuration);
+
+      console.log({ AvaTemp });
+      Ava = parseFloat(Number(AvaTemp * 100).toFixed(0));
+
+      if (isNaN(Ava)) Ava = 0;
+
+      console.log({ Oeedata });
+
+      Perfor = parseFloat(Number(Oeedata[0]?.performance).toFixed(0));
+
+      console.log({ Perfor });
+      let PerforPro =
+        (showProgress.std * (showProgress.okqty + showProgress.ngqty)) /
+        (showProgress.duration - showProgress.downtime);
+
+      if (isNaN(PerforPro)) PerforPro = 0;
+
+      if (Perfor > 0) {
+        Perfor = parseFloat(Number((Perfor + PerforPro) / 2).toFixed(0));
+      } else {
+        Perfor = parseFloat(Number(Perfor + PerforPro).toFixed(0));
+      }
+      if (isNaN(Perfor)) Perfor = 0;
+
+      Quality =
+        (Oeedata[0]?.okqty + showProgress.okqty) /
+        (Oeedata[0]?.okqty +
+          showProgress.okqty +
+          (Oeedata[0]?.ngqty + showProgress.ngqty));
+      console.log({ Quality });
+      setQuality(Quality);
+      if (isNaN(Quality)) Quality = 0;
+    } else {
+      // AvaTemp = Number(showProgress.runtime) / Number(showProgress.duration);
+      // console.log({ AvaTemp });
+      // Ava = parseFloat(Number(AvaTemp * 100).toFixed(0));
+      // if (isNaN(Ava)) Ava = 0;
+
+      // Perfor = parseFloat(Number(showProgress.performance).toFixed(0));
+      // if (isNaN(Perfor)) Perfor = 0;
+
+      Quality = Oeedata[0]?.okqty / (Oeedata[0]?.okqty + Oeedata[0]?.ngqty);
+      setQuality(Quality);
+      if (isNaN(Quality)) Quality = 0;
+    }
+
+    let oee = (Ava * Perfor * Quality * 100) / (100 * 100 * 100);
+    console.log({ Ava, Perfor, Quality });
+    console.log({ oee });
+    if (isNaN(oee)) oee = 0;
+    console.log({ Ava });
+    // OeePercent = parseFloat(Number(oee).toFixed(0));
+    console.log({ OeePercent });
+    setOeePecent(oee);
+    if (isNaN(OeePercent)) OeePercent = 0;
   };
 
   useEffect(() => {
@@ -42,77 +123,64 @@ export const ShowOEE = (props: { pdkey: String, pdstatus: String }) => {
       const { data, error } = await supabase.rpc("showoeeline", {
         prounit: lineunit,
         pdate: Today,
-        pstatus: pdstatus
+        pstatus: pdstatus,
       });
+
+      console.log({ data });
       if (!error) {
         SetOeeData(data);
       }
     };
+
     fetchDataOEE();
   }, []);
 
+  console.log({ showProgress });
 
-    //*** */
-const fetchShowProgress = async () => {
-  let { data, error } = await supabase.rpc("onprogress", {
-    propdkey: pdkey,
-  });
-  if (!error) {
-    SetShowProgress(data);
-  }
-};
-
-useEffect(() => {
+  //*** */
   const fetchShowProgress = async () => {
+    console.log({ pdkey });
     const { data, error } = await supabase.rpc("onprogress", {
       propdkey: pdkey,
     });
+
+    console.log({ data });
     if (!error) {
-      SetShowProgress(data);
+      if (data) {
+        setShowProgress(data[0]);
+      }
     }
   };
-  fetchShowProgress();
-}, [pdkey]);
 
-  let Perfor = 0;
-  let Ava = 0;
-  let AvaTemp = 0;
-  let Quality = 0;
-  if(ShowProgress.length>0){
-    AvaTemp = (Number(ShowProgress[0]?.runtime)+(ShowProgress[0]?.duration - ShowProgress[0]?.downtime)) / (Number(ShowProgress[0]?.duration)+ShowProgress[0]?.duration);
-    Ava = parseFloat(Number(AvaTemp*100).toFixed(0));
-    if (isNaN(Ava)) Ava = 0;
+  const fetchBeforeProgress = async () => {
+    const { data, error } = await supabase.rpc("before_progress", {
+      linename,
+    });
 
-    Perfor = parseFloat(Number(Oeedata[0]?.performance).toFixed(0));
-    let PerforPro = (ShowProgress[0]?.std * (ShowProgress[0]?.okqty + ShowProgress[0]?.ngqty)) / ((ShowProgress[0]?.duration - ShowProgress[0]?.downtime));
-    if (isNaN(PerforPro)) PerforPro = 0;
-
-    if(Perfor>0){
-      Perfor = parseFloat(Number((Perfor+PerforPro)/2).toFixed(0)); 
-    }else{
-      Perfor = parseFloat(Number((Perfor+PerforPro)).toFixed(0)); 
+    if (!error) {
+      setShowBeforeProgress(data[0]);
     }
-    if (isNaN(Perfor)) Perfor = 0;
 
-    Quality = (Oeedata[0]?.okqty+ShowProgress[0]?.okqty) / ((Oeedata[0]?.okqty+ShowProgress[0]?.okqty) + (Oeedata[0]?.ngqty+ShowProgress[0]?.ngqty));
-    if (isNaN(Quality)) Quality = 0;
-  }else{
-    AvaTemp = Number(ShowProgress[0]?.runtime)/Number(ShowProgress[0]?.duration);
-    Ava = parseFloat(Number(AvaTemp*100).toFixed(0));
-    if (isNaN(Ava)) Ava = 0;
+    console.log({ data });
+  };
 
-    Perfor = parseFloat(Number(ShowProgress[0]?.performance).toFixed(0));
-    if (isNaN(Perfor)) Perfor = 0;
+  useEffect(() => {
+    if (pdkey) {
+      (async function () {
+        // await fetchShowProgress();
+        // await fetchBeforeProgress();
 
-    Quality = Oeedata[0]?.okqty / (Oeedata[0]?.okqty + Oeedata[0]?.ngqty);
-    if (isNaN(Quality)) Quality = 0;
-  }
-    
-  let oee = Ava * Perfor * Quality * 100;
-  if (isNaN(oee)) oee = 0;
-  console.log({Ava})
-  let OeePercent = parseFloat(Number(oee).toFixed(0));
-  if (isNaN(OeePercent)) OeePercent = 0;
+        await Promise.all([
+          await fetchShowProgress(),
+          await fetchBeforeProgress(),
+        ]);
+      })();
+    }
+  }, [pdkey]);
+
+  useEffect(() => {
+    Summary();
+  }, [showProgress]);
 
   return (
     <div>
@@ -120,7 +188,7 @@ useEffect(() => {
       <GaugeChart
         id="gauge-chart4"
         nrOfLevels={10}
-        percent={Quality}
+        percent={quality}
         colors={["#EA4228", "#5BE12C"]}
         needleBaseColor={"#FFFFFF"}
         needleColor={"#FFFFFF"}
@@ -130,7 +198,7 @@ useEffect(() => {
       <GaugeChart
         id="gauge-chart4"
         nrOfLevels={10}
-        percent={OeePercent / 100}
+        percent={oeePercent}
         colors={["#EA4228", "#5BE12C"]}
         needleBaseColor={"#FFFFFF"}
         needleColor={"#FFFFFF"}
