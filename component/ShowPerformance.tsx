@@ -11,8 +11,9 @@ export const ShowPerformance = (props: { pdkey: String; pdstatus: String }) => {
   const Today = new Date().toISOString().slice(0, 10);
   const lineunit = "AHPB-01";
   const [ShowProgress, SetShowProgress] = useState<any>("");
-  const [dataPer, setDataPer] = useState<any>(0);
-  console.log("dataPer", dataPer);
+  console.log({ShowProgress});
+  
+  
 
   const ProductionHistoryP = supabase
     .channel("custom-perf-channel")
@@ -80,8 +81,8 @@ export const ShowPerformance = (props: { pdkey: String; pdstatus: String }) => {
     fetchShowProgress();
   }, [pdkey]);
 
-  let Perfor = 0;
-  let Ava = 0;
+  let Perfor : any = 0;
+  let Ava : any = 0;
   let AvaTemp = 0;
 
   if (ShowProgress.length > 0) {
@@ -92,7 +93,7 @@ export const ShowPerformance = (props: { pdkey: String; pdstatus: String }) => {
     Ava = parseFloat(Number(AvaTemp * 100).toFixed(0));
     if (isNaN(Ava)) Ava = 0;
 
-    Perfor = parseFloat(Number(PerData[0]?.performance).toFixed(0));
+    Perfor = parseFloat(Number(PerData[0]?.performance ).toFixed(0));
 
     let PerforPro =
       (ShowProgress[0]?.std *
@@ -105,36 +106,24 @@ export const ShowPerformance = (props: { pdkey: String; pdstatus: String }) => {
         Number((Perfor + PerforPro) / PerData[0].proamount).toFixed(0)
       );
     } else {
-      Perfor = parseFloat(Number(Perfor + PerforPro).toFixed(0));
+      Perfor = parseFloat(Number((Perfor + PerforPro) / PerData[0].proamount).toFixed(0));
     }
 
     if (isNaN(Perfor)) Perfor = 0;
   } else {
     AvaTemp = Number(PerData[0]?.runtime) / Number(PerData[0]?.duration);
     Ava = parseFloat(Number(AvaTemp * 100).toFixed(0));
+    localStorage.setItem("AvaStopWO",Ava)
     if (isNaN(Ava)) Ava = 0;
 
-    Perfor = parseFloat(Number(PerData[0]?.performance).toFixed(0));
+     Perfor = parseFloat(Number(PerData[0]?.performance / PerData[0]?.proamount).toFixed(0));
+    localStorage.setItem("PerStopWO",Perfor)
     if (isNaN(Perfor)) Perfor = 0;
   }
   console.log("Perfor", Perfor);
-  useEffect(() => {
-    let PerforPro =
-      (ShowProgress[0]?.std *
-        (ShowProgress[0]?.okqty + ShowProgress[0]?.ngqty)) /
-      (ShowProgress[0]?.duration - ShowProgress[0]?.downtime);
-    const Perfor = parseFloat(Number(PerData[0]?.performance).toFixed(0));
 
-    const fetperformance = async () => {
-      setDataPer(
-        parseFloat(
-          Number((Perfor + PerforPro) / PerData[0].proamount).toFixed(0)
-        )
-      );
-    };
-    fetperformance;
-  }, [PerData]);
-
+  console.log('Ava',Ava);
+  
   return (
     <div>
       <div className="NameGauge">Performance</div>

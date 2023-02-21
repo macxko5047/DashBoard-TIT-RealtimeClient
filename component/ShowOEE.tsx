@@ -175,10 +175,10 @@ export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
       // AvaTemp = Number(showProgress.runtime) / Number(showProgress.duration);
       // console.log({ AvaTemp });
       // Ava = parseFloat(Number(AvaTemp * 100).toFixed(0));
-      // if (isNaN(Ava)) Ava = 0;
+      if (isNaN(Ava)) Ava = 0;
 
-      // Perfor = parseFloat(Number(showProgress.performance).toFixed(0));
-      // if (isNaN(Perfor)) Perfor = 0;
+      Perfor = parseFloat(Number(showProgress?.performance).toFixed(0));
+      if (isNaN(Perfor)) Perfor = 0;
 
       Quality = Oeedata[0]?.okqty / (Oeedata[0]?.okqty + Oeedata[0]?.ngqty);
       Quality = parseFloat(Number(Quality).toFixed(0));
@@ -186,7 +186,7 @@ export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
       setQuality(Number(Quality));
       if (isNaN(Quality)) Quality = 0;
     }
-
+    
     let oee = (Ava * Perfor * Quality * 100) / (100 * 100 * 100);
 
     console.log({ Ava, Perfor, Quality });
@@ -197,12 +197,25 @@ export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
     console.log({ OeePercent });
     setOeePecent(oee);
     if (isNaN(OeePercent)) OeePercent = 0;
+    if (oee == 0 ){
+      const performancePercen  = (Number(localStorage.getItem("PerStopWO")))
+      const availabilityPercen = (Number(localStorage.getItem("AvaStopWO")))
+      const celculateOEE = performancePercen * availabilityPercen * Quality / (10000)
+      console.log('celculateOEE',celculateOEE);
+      
+      setOeePecent(celculateOEE )
+    }
   };
 
   useEffect(() => {
     Summary();
   }, [showProgress, showBeforeProgress, Oeedata]);
 
+//   useEffect(()=>{
+// if(showProgress == null){
+//   Summary();
+// }
+//   },[])
   return (
     <div>
       <div className="NameGauge">Quality</div>
