@@ -5,7 +5,7 @@ import supabase from "./supabase";
 
 export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
   const router = useRouter();
-  const { linename } = router.query || "AHPB-01";
+  const linename = router.query.linename || "AHPB-01";
 
   console.log({ linename });
   const { pdkey, pdstatus } = props;
@@ -14,36 +14,109 @@ export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
   const lineunit = "AHPB-01";
   const [showProgress, setShowProgress] = useState<any>(null);
   const [showBeforeProgress, setShowBeforeProgress] = useState<any>(null);
-  const [quality, setQuality] = useState(0);
-  const [oeePercent, setOeePecent] = useState(0);
-
-  const ProductionHistory = supabase
-    .channel("oee-channel")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "Production_history",
-        filter: "Production_unit=eq." + lineunit,
-      },
-      (payload) => {
-        fetchDataOEE();
-        fetchShowProgress();
-      }
-    )
-    .subscribe();
+  const [quality, setQuality] = useState<number>(0);
+  const [oeePercent, setOeePecent] = useState<number>(0);
 
   const fetchDataOEE = async () => {
     const { data, error } = await supabase.rpc("showoeeline", {
-      prounit: lineunit,
+      prounit: linename,
       pdate: Today,
       pstatus: pdstatus,
     });
     if (!error) {
+      console.log({ data });
       SetOeeData(data);
     }
   };
+
+  //*** */
+  const fetchShowProgress = async () => {
+    console.log({ pdkey });
+    const { data, error } = await supabase.rpc("onprogress", {
+      propdkey: pdkey,
+    });
+
+    console.log({ data });
+    if (!error) {
+      if (data) {
+        setShowProgress(data[0]);
+      }
+    }
+  };
+
+  const fetchBeforeProgress = async () => {
+    const { data, error } = await supabase.rpc("before_progress", {
+      linename,
+    });
+
+    if (!error) {
+      setShowBeforeProgress(data[0]);
+    }
+
+    console.log({ data });
+  };
+
+  useEffect(() => {
+    if (pdkey != "undefined") {
+      console.log({ pdkey });
+      // const fetchDataOEE = async () => {
+      //   console.log("fetchDataOEE---------------------");
+      //   const { data, error } = await supabase.rpc("showoeeline", {
+      //     prounit: linename,
+      //     pdate: Today,
+      //     pstatus: pdstatus,
+      //   });
+      //   if (!error) {
+      //     console.log({ data });
+      //     SetOeeData(data);
+      //   }
+
+      // };
+
+      // fetchDataOEE();
+      const ProductionHistory = supabase
+        .channel("oee-channel")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "Production_history",
+            filter: "Production_unit=eq." + lineunit,
+          },
+          async (payload) => {
+            await fetchDataOEE();
+            await fetchShowProgress();
+          }
+        )
+        .subscribe();
+
+      const DowntimeRecord = supabase
+        .channel("oee-channel")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "Downtime_record",
+            filter: "PD_key=eq." + pdkey,
+          },
+          async (payload) => {
+            await fetchDataOEE();
+            await fetchShowProgress();
+          }
+        )
+        .subscribe();
+
+      (async function () {
+        await Promise.all([
+          await fetchDataOEE(),
+          await fetchShowProgress(),
+          await fetchBeforeProgress(),
+        ]);
+      })();
+    }
+  }, [pdkey]);
 
   const Summary = () => {
     let Perfor = 0;
@@ -52,7 +125,7 @@ export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
     let Quality = 0;
     let OeePercent = 0;
 
-    console.log({ showProgress });
+    console.log({ showProgress, showBeforeProgress });
     if (showProgress && showBeforeProgress) {
       const CurrentRuntime = showProgress.duration - showProgress.downtime;
       const CurrentDuration = showProgress.duration;
@@ -91,7 +164,10 @@ export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
           showProgress.okqty +
           (Oeedata[0]?.ngqty + showProgress.ngqty));
       console.log({ Quality });
-      setQuality(Quality);
+      //convert Quality to number 0 digit
+      Quality = parseFloat(Number(Quality).toFixed(0));
+      console.log({ Quality });
+      setQuality(Number(Quality));
       if (isNaN(Quality)) Quality = 0;
     } else {
       // AvaTemp = Number(showProgress.runtime) / Number(showProgress.duration);
@@ -103,11 +179,14 @@ export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
       // if (isNaN(Perfor)) Perfor = 0;
 
       Quality = Oeedata[0]?.okqty / (Oeedata[0]?.okqty + Oeedata[0]?.ngqty);
-      setQuality(Quality);
+      Quality = parseFloat(Number(Quality).toFixed(0));
+
+      setQuality(Number(Quality));
       if (isNaN(Quality)) Quality = 0;
     }
 
     let oee = (Ava * Perfor * Quality * 100) / (100 * 100 * 100);
+
     console.log({ Ava, Perfor, Quality });
     console.log({ oee });
     if (isNaN(oee)) oee = 0;
@@ -119,68 +198,8 @@ export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
   };
 
   useEffect(() => {
-    const fetchDataOEE = async () => {
-      const { data, error } = await supabase.rpc("showoeeline", {
-        prounit: lineunit,
-        pdate: Today,
-        pstatus: pdstatus,
-      });
-
-      console.log({ data });
-      if (!error) {
-        SetOeeData(data);
-      }
-    };
-
-    fetchDataOEE();
-  }, []);
-
-  console.log({ showProgress });
-
-  //*** */
-  const fetchShowProgress = async () => {
-    console.log({ pdkey });
-    const { data, error } = await supabase.rpc("onprogress", {
-      propdkey: pdkey,
-    });
-
-    console.log({ data });
-    if (!error) {
-      if (data) {
-        setShowProgress(data[0]);
-      }
-    }
-  };
-
-  const fetchBeforeProgress = async () => {
-    const { data, error } = await supabase.rpc("before_progress", {
-      linename,
-    });
-
-    if (!error) {
-      setShowBeforeProgress(data[0]);
-    }
-
-    console.log({ data });
-  };
-
-  useEffect(() => {
-    if (pdkey) {
-      (async function () {
-        // await fetchShowProgress();
-        // await fetchBeforeProgress();
-
-        await Promise.all([
-          await fetchShowProgress(),
-          await fetchBeforeProgress(),
-        ]);
-      })();
-    }
-  }, [pdkey]);
-
-  useEffect(() => {
     Summary();
-  }, [showProgress]);
+  }, [showProgress, showBeforeProgress, Oeedata]);
 
   return (
     <div>
@@ -188,21 +207,23 @@ export const ShowOEE = (props: { pdkey: String; pdstatus: String }) => {
       <GaugeChart
         id="gauge-chart4"
         nrOfLevels={10}
-        percent={quality}
+        percent={quality ? quality : 0}
         colors={["#EA4228", "#5BE12C"]}
         needleBaseColor={"#FFFFFF"}
         needleColor={"#FFFFFF"}
         textColor={"#FFFFFF "}
+        formatTextValue={(value) => `${parseFloat(Number(value).toFixed(0))}%`}
       />
       <div className="NameGauge">OEE</div>
       <GaugeChart
         id="gauge-chart4"
         nrOfLevels={10}
-        percent={oeePercent}
+        percent={oeePercent ? oeePercent : 0}
         colors={["#EA4228", "#5BE12C"]}
         needleBaseColor={"#FFFFFF"}
         needleColor={"#FFFFFF"}
         textColor={"#FFFFFF "}
+        formatTextValue={(value) => `${parseFloat(Number(value).toFixed(0))}%`}
       />
     </div>
   );
