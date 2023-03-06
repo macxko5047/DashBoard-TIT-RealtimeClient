@@ -380,7 +380,7 @@ export const ShowPerformance = (props: {
   // console.log({ pdstatus });
 
   if (loading) {
-    return <div> Loading ....</div>;
+    return <div> Loading ...</div>;
   }
 
   return (
