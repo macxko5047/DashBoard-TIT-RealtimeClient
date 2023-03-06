@@ -1,14 +1,19 @@
 import { useEffect, useState } from "react";
-import supabase from "./supabase";
+import supabase from "../component_config/supabase";
 
-export const ShowDTRealTime = (props: { pdkey: String; pdstatus: String }) => {
-  const { pdkey, pdstatus } = props;
+export const ShowDTRealTime = (props: {
+  pdkey: String;
+  pdstatus: String;
+  detailLine: String;
+}) => {
+  const { pdkey, pdstatus, detailLine } = props;
+
   const [ShowDTRT, SetDTRT] = useState<any>("");
   const Today = new Date().toISOString().slice(0, 10);
   const [dateState, useDateState] = useState(new Date());
   const [TimeState, SetTimeState] = useState<any>("");
   let bgDT = "";
-
+  const [lineunit, setLineunit] = useState<String>("");
   useEffect(() => {
     setInterval(() => useDateState(new Date()), 1000);
   }, []);
@@ -23,7 +28,11 @@ export const ShowDTRealTime = (props: { pdkey: String; pdstatus: String }) => {
       }
     };
     fetchDTRealTime();
-  }, [pdstatus]);
+
+    if (detailLine) {
+      setLineunit(detailLine);
+    }
+  }, [pdstatus, detailLine]);
 
   const st = new Date(Today + " " + ShowDTRT[0]?.dtstart);
   const en = new Date(dateState);

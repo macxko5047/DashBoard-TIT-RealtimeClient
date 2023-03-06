@@ -7,17 +7,26 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
-import supabase from "./supabase";
+import React, { useEffect, useRef, useState } from "react";
+import supabase from "../component_config/supabase";
 
-export const ShowWO = () => {
+export const ShowWO = (props: { detailLine: String }) => {
   const mounted = useRef(false);
   const [GetWoLine, SetWoLine] = useState<any>([]);
+  // console.log({ GetWoLine });
+  const { detailLine } = props;
+
   const Today = new Date().toISOString().slice(0, 10);
-  const lineunit = "AHPB-01";
+  const [lineunit, setLineunit] = useState<String>("");
+
+  useEffect(() => {
+    if (detailLine) {
+      setLineunit(detailLine);
+    }
+  }, [detailLine]);
 
   const ProductionHistory = supabase
-    .channel("custom-filter-channel")
+    .channel("custom-filter-channelWorkOrderUpDate")
     .on(
       "postgres_changes",
       {
@@ -38,7 +47,7 @@ export const ShowWO = () => {
     const { data, error } = await supabase
       .from("Production_history")
       .select(
-        "Work_order_id,Item_number,Availability_percent,Performance_percent,Quality_percent,OEE_percent"
+        "PD_key,Work_order_id,Item_number,Availability_percent,Performance_percent,Quality_percent,OEE_percent"
       )
       .eq("Production_unit", lineunit)
       .eq("Production_date", Today)
@@ -54,7 +63,7 @@ export const ShowWO = () => {
       const { data, error } = await supabase
         .from("Production_history")
         .select(
-          "Work_order_id,Item_number,Availability_percent,Performance_percent,Quality_percent,OEE_percent"
+          "PD_key,Work_order_id,Item_number,Availability_percent,Performance_percent,Quality_percent,OEE_percent,Standard_time"
         )
         .eq("Production_unit", lineunit)
         .eq("Production_date", Today)
@@ -67,7 +76,7 @@ export const ShowWO = () => {
     return () => {
       mounted.current = false;
     };
-  }, []);
+  }, [lineunit]);
 
   return (
     <>
@@ -97,7 +106,7 @@ export const ShowWO = () => {
           <TableBody>
             {GetWoLine.map((row: any) => (
               <TableRow
-                key={row.Work_order_id}
+                key={row.PD_key}
                 sx={{
                   "&:last-child td, &:last-child th": { border: 0 },
                   color: "#FFFFFF",

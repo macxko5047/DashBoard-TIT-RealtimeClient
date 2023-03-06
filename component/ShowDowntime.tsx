@@ -1,14 +1,21 @@
 import { useEffect, useRef, useState } from "react";
-import supabase from "./supabase";
+import supabase from "../component_config/supabase";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 // import { Chart, ChartItem } from "chart.js";
 import { Chart, ChartItem, registerables, ChartType } from "chart.js";
 Chart.register(...registerables);
 
-export const ShowDowntime = () => {
+export const ShowDowntime = (props: { detailLine: String }) => {
   const [Downtime, SetDTData] = useState<any>([]);
   const Today = new Date().toISOString().slice(0, 10);
-  const lineunit = 'AHPB-01';
+  const { detailLine } = props;
+  const [lineunit, setLineunit] = useState<String>("");
+
+  useEffect(() => {
+    if (detailLine) {
+      setLineunit(detailLine);
+    }
+  }, [detailLine]);
 
   const DowntimeRecord = supabase
     .channel("custom-downtime-channel")
@@ -42,7 +49,7 @@ export const ShowDowntime = () => {
       }
     };
     fetchDataDT();
-  }, []);
+  }, [lineunit]);
 
   const dataDT = {
     labels: Downtime.map(
@@ -61,7 +68,6 @@ export const ShowDowntime = () => {
       {
         label: "Down time reason",
         data: Downtime.map((row: { duration: Number }) => row.duration),
-        
       },
     ],
   };
@@ -72,8 +78,8 @@ export const ShowDowntime = () => {
 
   useEffect(() => {
     const ctx = canvasDT.current?.getContext("2d") as ChartItem;
-    
-    const config = {
+
+    const config: any = {
       type: "pie" as ChartType,
       data: dataDT,
       width: 1,
@@ -96,7 +102,7 @@ export const ShowDowntime = () => {
               top: -2,
               right: 1,
               bottom: 16,
-              left: 2
+              left: 2,
             },
           },
           datalabels: {

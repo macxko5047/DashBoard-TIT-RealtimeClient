@@ -1,56 +1,59 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
 import GaugeChart from "react-gauge-chart";
-import supabase from "./supabase";
+import supabase from "../component_config/supabase";
+import Appcontext from "./zustand.tsx/Appcontext";
 
-export const ShowProgress = (props: { pdkey: String }) => {
-  const { pdkey } = props;
-  const mounted = useRef(false);
-  const [ShowProgress, SetShowProgress] = useState<any>("");
-  const lineunit = 'AHPB-01';
-
-  const ProductionHistory = supabase
-    .channel("custom-progress-channel")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "Production_history",
-        filter: "Production_unit=eq."+lineunit,
-      },
-      (payload) => {
-        fetchShowProgress();
-      }
-    )
-    .subscribe();
-
-  const fetchShowProgress = async () => {
-    let { data, error } = await supabase.rpc("showprogress", {
-      propdkey: pdkey,
-    });
-    if (!error) {
-      SetShowProgress(data);
+export const ShowProgress = (props: {
+  pdstatus: string;
+  pdkey: string;
+  detailLine: string;
+}) => {
+  const { pdkey, pdstatus, detailLine } = props;
+  // console.log({ pdstatus });
+  // const mounted = useRef(false);
+  // const [ShowProgress, SetShowProgress] = useState<any>("");
+  const [lineunit, setLineunit] = useState<string>("");
+  // console.log("lineunit", lineunit);
+  useEffect(() => {
+    if (detailLine) {
+      setLineunit(detailLine);
     }
-  };
+  }, [detailLine]);
+
+  const appcontext: any = useContext(Appcontext);
+  // console.log("appcontext Page ShowProgress", appcontext);
+
+  // const ProductionHistory = supabase
+  //   .channel("custom-alldw-ShowProgressRealtime")
+  //   .on(
+  //     "postgres_changes",
+  //     { event: "*", schema: "public", table: "Production_history" },
+  //     (payload) => {
+  //       console.log("Change received ShowProgressRealtime !!!", payload);
+  //     }
+  //   )
+  //   .subscribe();
+
+  const [progressShow, setProgressShow] = useState<number>(0);
+  // console.log({ progressShow });
+
+  const ProgressShow =
+    (appcontext.appstate[0]?.OK_qty / appcontext.appstate[0]?.Open_qty) * 100;
 
   useEffect(() => {
-    mounted.current = true;
-    const fetchShowProgress = async () => {
-      const { data, error } = await supabase.rpc("showprogress", {
-        propdkey: pdkey,
-      });
-      if (!error) {
-        SetShowProgress(data);
+    if (pdstatus != undefined) {
+      if (ProgressShow > 0) {
+        setProgressShow(Number(ProgressShow.toFixed(0)));
       }
-    };
-    fetchShowProgress();
-    return () => {
-      mounted.current = false;
-    };
-  }, [pdkey]);
 
-  let ProPercent = parseFloat(Number(ShowProgress[0]?.percent).toFixed(0));
-  if (isNaN(ProPercent)) ProPercent = 0;
+      if (pdstatus == "Offline") {
+        console.log("test return");
+
+        setProgressShow(0);
+      }
+    }
+    console.log({ pdstatus });
+  }, [appcontext, pdstatus]);
 
   return (
     <div>
@@ -58,8 +61,8 @@ export const ShowProgress = (props: { pdkey: String }) => {
       <GaugeChart
         id="gauge-progress"
         nrOfLevels={1}
-        percent={ProPercent / 100}
-        arcsLength={[ProPercent / 100, (100 - ProPercent) / 100]}
+        percent={progressShow / 100}
+        arcsLength={[progressShow / 100, (100 - progressShow) / 100]}
         colors={["#5BE12C", "rgb(250, 214, 209, 0.15)"]}
         needleBaseColor={"#FFFFFF"}
         needleColor={"#FFFFFF"}

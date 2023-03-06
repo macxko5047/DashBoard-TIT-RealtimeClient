@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Grid from "@mui/material/Grid";
-import supabase from "../component/supabase";
+import supabase from "../component_config/supabase";
 import { ShowPerformance } from "../component/ShowPerformance";
 import { ShowProgress } from "../component/ShowProgress";
 import { ShowProgressWork } from "../component/ShowProgressWork";
@@ -8,37 +8,56 @@ import { ShowDowntime } from "../component/ShowDowntime";
 import { ShowOEE } from "../component/ShowOEE";
 import { ShowWO } from "../component/ShowWO";
 import { ShowDTRealTime } from "../component/ShowDTRealTime";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import Select from "@mui/material/Select";
+import InputLabel from "@mui/material/InputLabel";
+import FormControl from "@mui/material/FormControl";
 
 export default function ShowDashBoard1() {
   const [ShowUnit, SetShowUnit] = useState<any>("");
   const [loadings, setLoadings] = useState(false);
-  const lineunit = 'AHPB-01';
+  const [lineunit, setLineunit] = useState<string>("AHPB-01");
+  const [unitgroup, setUnitgroup] = useState<any>([]);
+  const [dataLineFilter, setDataLineFilter] = useState<any>([]);
+  const [detailLineUnitgroup, setDetailLineUnitGroup] = useState<any>("");
+  const [detailLine, setDetailLine] = useState<string>("");
+  // console.log("unitgroup", unitgroup);
+  console.log("dataLineFilter", dataLineFilter);
 
-  useEffect(() => {
-    document.addEventListener("click", (e) => {
-      document.documentElement.requestFullscreen().catch((e) => {});
-    });
-  }, []);
+  //================== ขยายเต็มจอ =================================
+  // useEffect(() => {
+  //   document.addEventListener("click", (e) => {
+  //     document.documentElement.requestFullscreen().catch((e) => {});
+  //   });
+  // }, []);
+  //--------------------------------------------------------------
   // Data Line
-  const ProductionUnitGroup = supabase
-    .channel("custom-pdunit-channel")
-    .on(
-      "postgres_changes",
-      {
-        event: "*",
-        schema: "public",
-        table: "Production_unit_group",
-        filter: "PD_line=eq."+lineunit,
-      },
-      (payload) => {
-        fetchShowUnit();
-      }
-    )
-    .subscribe();
+  useEffect(() => {
+    const ProductionUnitGroup = supabase
+      .channel("custom-pdunit-channelcheckUnitGroupLine")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "Production_unit_group",
+          filter: "PD_line=eq." + detailLine,
+        },
+        (payload) => {
+          console.log("custom-pdunit-channelasde", payload);
+
+          fetchShowUnit();
+        }
+      )
+      .subscribe();
+  }, []);
 
   const fetchShowUnit = async () => {
     const { data, error } = await supabase.rpc("showline", {
-      prounit: lineunit,
+      prounit: detailLine,
     });
     if (!error) {
       SetShowUnit(data);
@@ -48,17 +67,48 @@ export default function ShowDashBoard1() {
   useEffect(() => {
     const fetchShowUnit = async () => {
       const { data, error } = await supabase.rpc("showline", {
-        prounit: lineunit,
+        prounit: detailLine,
       });
       if (!error) {
         SetShowUnit(data);
+        console.log("fetch Success ", data);
       }
     };
     fetchShowUnit();
     setLoadings(false);
-  }, []);
-  // End Data Line
 
+    const fetchdataGroupName = async () => {
+      let { data: Production_unit_group, error } = await supabase
+        .from("Production_unit_group")
+        .select("Group_name,PD_line");
+      if (Production_unit_group) {
+        const mapdataUnitGroup = await Production_unit_group.map(
+          (rresr: any) => rresr.Group_name
+        );
+        let unique = await [...new Set(mapdataUnitGroup)];
+        // console.log({ unique });
+
+        await setUnitgroup(unique);
+        await setDataLineFilter(Production_unit_group);
+      }
+    };
+    fetchdataGroupName();
+  }, [detailLine]);
+  // End Data Line
+  // ==============จุด dropDown =======================================
+
+  const ITEM_HEIGHT: any = 48;
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const open = Boolean(anchorEl);
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  //-----------------------------------------------------------
   if (loadings) {
     return <div>Loading .... </div>;
   }
@@ -159,14 +209,14 @@ export default function ShowDashBoard1() {
           font-size: 20px;
           font-weight: bold;
         }
-        .NameGroup{
+        .NameGroup {
           width: 33%;
           float: left;
           padding-left: 10px;
           text-align: left;
           display: inline;
         }
-        .NameUnit{
+        .NameUnit {
           width: 33%;
           float: left;
           text-align: center;
@@ -175,10 +225,84 @@ export default function ShowDashBoard1() {
       `}</style>
       <div
         className={`${ShowUnit[0]?.pdstatus}`}
-        style={{ height: 54, fontSize: 36, borderRadius: 0, paddingTop:6 }}
+        style={{ height: 54, fontSize: 36, borderRadius: 0, paddingTop: 6 }}
       >
         <div className="NameGroup">ASSEMBLY</div>
-        <div className="NameUnit">{ShowUnit[0]?.pdunit}</div>
+        <div className="NameUnit">
+          {detailLine}
+          <IconButton
+            aria-label="more"
+            id="long-button"
+            aria-controls={open ? "long-menu" : undefined}
+            aria-expanded={open ? "true" : undefined}
+            aria-haspopup="true"
+            onClick={handleClick}
+          >
+            <MoreVertIcon />
+          </IconButton>
+          <Menu
+            id="long-menu"
+            MenuListProps={{
+              "aria-labelledby": "long-button",
+            }}
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            PaperProps={{
+              style: {
+                maxHeight: ITEM_HEIGHT * 4.5,
+                width: "20ch",
+              },
+            }}
+          >
+            <FormControl sx={{ m: 1, minWidth: 150 }}>
+              <InputLabel id="demo-dialog-select-label">Unit Group</InputLabel>
+              <Select
+                label="Unit Group"
+                fullWidth
+                value={detailLineUnitgroup}
+                onChange={(event) => setDetailLineUnitGroup(event.target.value)}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {unitgroup.map((option: any) => (
+                  <MenuItem
+                    key={option}
+                    value={option}
+                    // selected={option === "Pyxis"}
+                  >
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <FormControl sx={{ m: 1, minWidth: 150 }}>
+              <InputLabel htmlFor="grouped-select">Line</InputLabel>
+              <Select
+                value={detailLine}
+                id="grouped-select"
+                label="Line"
+                onChange={(event: any) => setDetailLine(event.target.value)}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                {dataLineFilter
+                  .filter(
+                    (option01: any) =>
+                      option01.Group_name == detailLineUnitgroup
+                  )
+                  .map((filtermap: any) => (
+                    <MenuItem key={filtermap.PD_line} value={filtermap.PD_line}>
+                      {filtermap.PD_line}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </Menu>
+        </div>
+        <div></div>
       </div>
       <Grid
         container
@@ -193,17 +317,33 @@ export default function ShowDashBoard1() {
               <div className={"Machine"}>
                 <div className="Distanct">Work order : {ShowUnit[0]?.woid}</div>
                 <div className="Distanct">Item : {ShowUnit[0]?.itemnumber}</div>
-                <ShowProgressWork pdkey={String(ShowUnit[0]?.pdkey)} />
+                <ShowProgressWork
+                  pdkey={String(ShowUnit[0]?.pdkey)}
+                  pdstatus={String(ShowUnit[0]?.pdstatus)}
+                  detailLine={String(detailLine)}
+                />
               </div>
             </Grid>
             <Grid item xs={6}>
-              <ShowProgress pdkey={String(ShowUnit[0]?.pdkey)} />
+              <ShowProgress
+                pdkey={String(ShowUnit[0]?.pdkey)}
+                pdstatus={String(ShowUnit[0]?.pdstatus)}
+                detailLine={String(detailLine)}
+              />
             </Grid>
             <Grid item xs={6}>
-              <ShowPerformance pdkey={String(ShowUnit[0]?.pdkey)} pdstatus={String(ShowUnit[0]?.pdstatus)} />
+              <ShowPerformance
+                pdkey={String(ShowUnit[0]?.pdkey)}
+                pdstatus={String(ShowUnit[0]?.pdstatus)}
+                detailLine={String(detailLine)}
+              />
             </Grid>
             <Grid item xs={6}>
-              <ShowOEE pdkey={String(ShowUnit[0]?.pdkey)} pdstatus={String(ShowUnit[0]?.pdstatus)} />
+              <ShowOEE
+                pdkey={String(ShowUnit[0]?.pdkey)}
+                pdstatus={String(ShowUnit[0]?.pdstatus)}
+                detailLine={String(detailLine)}
+              />
             </Grid>
           </Grid>
         </Grid>
@@ -214,9 +354,10 @@ export default function ShowDashBoard1() {
               <ShowDTRealTime
                 pdkey={String(ShowUnit[0]?.pdkey)}
                 pdstatus={String(ShowUnit[0]?.pdstatus)}
+                detailLine={String(detailLine)}
               />
               <div className={"BgGraph"}>
-                <ShowDowntime />
+                <ShowDowntime detailLine={String(detailLine)} />
               </div>
             </Grid>
           </Grid>
@@ -224,7 +365,7 @@ export default function ShowDashBoard1() {
         <Grid item xs={12}>
           <div className={"Machine"}>
             <div className={`${ShowUnit[0]?.pdstatus}`}>History work today</div>
-            <ShowWO />
+            <ShowWO detailLine={String(detailLine)} />
           </div>
         </Grid>
       </Grid>
