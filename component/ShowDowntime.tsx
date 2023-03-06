@@ -48,6 +48,7 @@ export const ShowDowntime = (props: { detailLine: String }) => {
         SetDTData(data);
       }
     };
+
     fetchDataDT();
   }, [lineunit]);
 

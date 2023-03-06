@@ -29,10 +29,10 @@ export const ShowDTRealTime = (props: {
     };
     fetchDTRealTime();
 
-    if (detailLine) {
-      setLineunit(detailLine);
-    }
-  }, [pdstatus, detailLine]);
+    // if (detailLine) {
+    //   setLineunit(detailLine);
+    // }
+  }, [pdstatus]);
 
   const st = new Date(Today + " " + ShowDTRT[0]?.dtstart);
   const en = new Date(dateState);

@@ -162,7 +162,7 @@ export const ShowProgressWork = (props: {
 
     fetchdata_qty();
     setLoading(false);
-  }, [pdkey, lineunit]);
+  }, [pdkey]);
 
   const [fgShow, setFgShow] = useState<number>(0);
   const [ngShow, setNgShow] = useState<number>(0);

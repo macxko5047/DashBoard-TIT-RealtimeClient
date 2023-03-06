@@ -24,6 +24,8 @@ export default function ShowDashBoard1() {
   const [dataLineFilter, setDataLineFilter] = useState<any>([]);
   const [detailLineUnitgroup, setDetailLineUnitGroup] = useState<any>("");
   const [detailLine, setDetailLine] = useState<string>("");
+  console.log({ detailLine });
+
   // console.log("unitgroup", unitgroup);
   console.log("dataLineFilter", dataLineFilter);
 
@@ -35,25 +37,24 @@ export default function ShowDashBoard1() {
   // }, []);
   //--------------------------------------------------------------
   // Data Line
-  useEffect(() => {
-    const ProductionUnitGroup = supabase
-      .channel("custom-pdunit-channelcheckUnitGroupLine")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "Production_unit_group",
-          filter: "PD_line=eq." + detailLine,
-        },
-        (payload) => {
-          console.log("custom-pdunit-channelasde", payload);
 
-          fetchShowUnit();
-        }
-      )
-      .subscribe();
-  }, []);
+  const ProductionUnitGroup = supabase
+    .channel("custom-pdunit-channelcheckUnitGroupLine")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "Production_unit_group",
+        filter: "PD_line=eq." + detailLine,
+      },
+      (payload) => {
+        console.log("custom-pdunit-channelasde", payload);
+
+        fetchShowUnit();
+      }
+    )
+    .subscribe();
 
   const fetchShowUnit = async () => {
     const { data, error } = await supabase.rpc("showline", {

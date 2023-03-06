@@ -76,7 +76,7 @@ export const ShowWO = (props: { detailLine: String }) => {
     return () => {
       mounted.current = false;
     };
-  }, [lineunit]);
+  }, []);
 
   return (
     <>
