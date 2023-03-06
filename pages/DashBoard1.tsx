@@ -30,11 +30,11 @@ export default function ShowDashBoard1() {
   console.log("dataLineFilter", dataLineFilter);
 
   //================== ขยายเต็มจอ =================================
-  // useEffect(() => {
-  //   document.addEventListener("click", (e) => {
-  //     document.documentElement.requestFullscreen().catch((e) => {});
-  //   });
-  // }, []);
+  useEffect(() => {
+    document.addEventListener("click", (e) => {
+      document.documentElement.requestFullscreen().catch((e) => {});
+    });
+  }, []);
   //--------------------------------------------------------------
   // Data Line
 
