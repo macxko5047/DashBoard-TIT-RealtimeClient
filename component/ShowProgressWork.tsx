@@ -72,6 +72,7 @@ export const ShowProgressWork = (props: {
         Production_unit: dataUP.Production_unit,
         Standard_time: dataUP.Standard_time,
         Work_order_id: dataUP.Work_order_id,
+        OP_confirm_before: dataUP.OP_confirm_before,
       },
     ];
     // console.log("dataUP OK_qty", datanewupdateRealtime);
