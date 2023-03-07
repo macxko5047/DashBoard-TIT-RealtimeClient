@@ -31,7 +31,7 @@ export default function ShowDashBoard1() {
 
   //================== ขยายเต็มจอ =================================
   useEffect(() => {
-    document.addEventListener("click", (e) => {
+    document.addEventListener("dblclick", (e) => {
       document.documentElement.requestFullscreen().catch((e) => {});
     });
   }, []);

@@ -183,7 +183,7 @@ export const ShowProgressWork = (props: {
   }, [dataShow]);
 
   useEffect(() => {
-    if (open_qtyShow > 0) {
+    if (open_qtyShow) {
       setFgPercen((fgShow / open_qtyShow) * 100);
       setNgPercen((ngShow / open_qtyShow) * 100);
     }
@@ -191,7 +191,7 @@ export const ShowProgressWork = (props: {
       setFgPercen(0);
       setNgPercen(0);
     }
-  }, [open_qtyShow, pdstatus]);
+  }, [fgShow, ngShow, pdstatus]);
 
   return (
     <div>
