@@ -1,6 +1,7 @@
 import { load } from "@amcharts/amcharts5/.internal/core/util/Net";
 import React, { useEffect, useState, useContext } from "react";
 import GaugeChart from "react-gauge-chart";
+import { ShowProgressWork } from "./ShowProgressWork";
 
 import supabase from "../component_config/supabase";
 import Appcontext from "./zustand.tsx/Appcontext";
@@ -281,7 +282,7 @@ export const ShowPerformance = (props: {
       }
       const PerformanceBefore = beforPerformance.performancepercent / 100;
 
-      if (Standard_time) {
+      if (Standard_time && lineunit != "") {
         let Performance_Percen =
           (await (Standard_time * (OK_qty + NG_qty))) / RuntimeDataSec;
         // console.log({ Performance_Percen });
@@ -321,7 +322,7 @@ export const ShowPerformance = (props: {
         // );
 
         //1 = 100% เลยต้องแปลง เป็น 100ด้วยการคูณ *100
-        if (Ap != null) {
+        if (Ap != null && lineunit != "") {
           if (AvailabilityBefore > 0) {
             const AvailabilityAll = (Ap * 100 + AvailabilityBefore) / 2;
             // console.log({ AvailabilityAll });

@@ -24,10 +24,10 @@ export default function ShowDashBoard1() {
   const [dataLineFilter, setDataLineFilter] = useState<any>([]);
   const [detailLineUnitgroup, setDetailLineUnitGroup] = useState<any>("");
   const [detailLine, setDetailLine] = useState<string>("");
-  console.log({ detailLine });
+  // console.log({ detailLine });
 
   // console.log("unitgroup", unitgroup);
-  console.log("dataLineFilter", dataLineFilter);
+  // console.log("dataLineFilter", dataLineFilter);
 
   //================== ขยายเต็มจอ =================================
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function ShowDashBoard1() {
       });
       if (!error) {
         SetShowUnit(data);
-        console.log("fetch Success ", data);
+        // console.log("fetch Success ", data);
       }
     };
     fetchShowUnit();

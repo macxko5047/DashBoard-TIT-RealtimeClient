@@ -41,7 +41,7 @@ export const ShowProgress = (props: {
     (appcontext.appstate[0]?.OK_qty / appcontext.appstate[0]?.Open_qty) * 100;
 
   useEffect(() => {
-    if (pdstatus != undefined) {
+    if (pdstatus != undefined && lineunit != "") {
       if (ProgressShow > 0) {
         setProgressShow(Number(ProgressShow.toFixed(0)));
       }
@@ -53,7 +53,8 @@ export const ShowProgress = (props: {
       }
     }
     console.log({ pdstatus });
-  }, [appcontext, pdstatus]);
+  }, [appcontext, pdstatus, lineunit]);
+  // console.log({ lineunit });
 
   return (
     <div>

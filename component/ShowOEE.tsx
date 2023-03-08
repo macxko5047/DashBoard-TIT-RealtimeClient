@@ -22,7 +22,7 @@ export const ShowOEE = (props: {
   const [beforPerformance, setBeforPerformance] = useState<any>([]);
 
   const [quality, setQuality] = useState<number>(0);
-  console.log({ quality });
+  // console.log({ quality });
 
   const [qualityAll, setQualityAll] = useState<number>(0);
   // console.log({ qualityAll });
@@ -59,7 +59,7 @@ export const ShowOEE = (props: {
   }, [appcontext]);
 
   const qualityBefore = beforPerformance.quality;
-  console.log({ qualityBefore });
+  // console.log({ qualityBefore });
   useEffect(() => {
     if (qualityBefore != undefined) {
       if (quality == 0) {
@@ -372,7 +372,7 @@ export const ShowOEE = (props: {
       const OeeBefore = beforPerformance.oeepercent / 100;
       const oeeCel =
         performancePercent * (apPercent / 100) * (qualityAll / 100);
-      console.log({ oeeCel });
+      // console.log({ oeeCel });
 
       if (oeeCel != null) {
         if (pdstatus == "Online" || pdstatus == "Downtime") {
