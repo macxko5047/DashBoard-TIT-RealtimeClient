@@ -63,7 +63,10 @@ export const ShowDowntime = (props: { detailLine: String }) => {
         row.dcode +
         " " +
         ((Number(row.duration) / Number(row.alldt)) * 100).toFixed(1) +
-        "%"
+        "%" +
+        " " +
+        (Number(row.duration) / 60).toFixed(2) +
+        "h"
     ),
     datasets: [
       {

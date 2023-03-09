@@ -20,7 +20,7 @@ export const ShowProgressWork = (props: {
   const [dataShow, setDataShow] = useState<any>([]);
   // console.log({ dataShow });
   const [dataManpower, setDataManpower] = useState<any>("");
-  console.log("dataManpower", dataManpower);
+  // console.log("dataManpower", dataManpower);
 
   const dataUserID = dataShow[0]?.OP_confirm_before
     ? dataShow[0]?.OP_confirm_before
