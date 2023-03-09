@@ -163,7 +163,7 @@ export const ShowProgressWork = (props: {
       </div>
       <div className="Distanct">Leader : {dataUserID}</div>
       <div className="Distanct" key={dataManpower}>
-        Satff : {dataManpower[0]} &nbsp;{dataManpower[1]}&nbsp;{dataManpower[2]}
+        Staff : {dataManpower[0]} &nbsp;{dataManpower[1]}&nbsp;{dataManpower[2]}
         &nbsp;{dataManpower[3]}&nbsp;{dataManpower[4]}
       </div>
     </div>
