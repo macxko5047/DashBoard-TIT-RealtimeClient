@@ -15,15 +15,27 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import Select from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
 import FormControl from "@mui/material/FormControl";
+import { Typography } from "@mui/material";
+import LanguageSharpIcon from "@mui/icons-material/LanguageSharp";
+import { useTranslation } from "react-i18next";
 
 export default function ShowDashBoard1() {
+  //========= language =====================================
+  const { t, i18n } = useTranslation(); //language
+  const [languagesUP, setLanguagesUP] = useState<any>("en");
+  const [language, setLanguage] = useState<null | HTMLElement>(null);
+  const handleMenulanguage = (event: React.MouseEvent<HTMLElement>) => {
+    setLanguage(event.currentTarget);
+  };
+  //---------------------------------------------------------
   const [ShowUnit, SetShowUnit] = useState<any>("");
   const [loadings, setLoadings] = useState(false);
-  const [lineunit, setLineunit] = useState<string>("AHPB-01");
+  // const [lineunit, setLineunit] = useState<string>("AHPB-01");
   const [unitgroup, setUnitgroup] = useState<any>([]);
   const [dataLineFilter, setDataLineFilter] = useState<any>([]);
-  const [detailLineUnitgroup, setDetailLineUnitGroup] = useState<any>("");
-  const [detailLine, setDetailLine] = useState<string>("");
+  const [detailLineUnitgroup, setDetailLineUnitGroup] =
+    useState<any>("GroupLine");
+  const [detailLine, setDetailLine] = useState<string>("Line");
   // console.log({ detailLine });
 
   // console.log("unitgroup", unitgroup);
@@ -213,12 +225,14 @@ export default function ShowDashBoard1() {
         .NameGroup {
           width: 33%;
           float: left;
+          color: #ffffff;
           padding-left: 10px;
           text-align: left;
           display: inline;
         }
         .NameUnit {
           width: 33%;
+          color: #ffffff;
           float: left;
           text-align: center;
           display: inline;
@@ -228,7 +242,7 @@ export default function ShowDashBoard1() {
         className={`${ShowUnit[0]?.pdstatus}`}
         style={{ height: 54, fontSize: 36, borderRadius: 0, paddingTop: 6 }}
       >
-        <div className="NameGroup">ASSEMBLY</div>
+        <div className="NameGroup">{detailLineUnitgroup}</div>
         <div className="NameUnit">
           {detailLine}
           <IconButton
@@ -238,8 +252,9 @@ export default function ShowDashBoard1() {
             aria-expanded={open ? "true" : undefined}
             aria-haspopup="true"
             onClick={handleClick}
+            sx={{ textAlign: "center" }}
           >
-            <MoreVertIcon />
+            <MoreVertIcon sx={{ color: "#FFFAF0" }} />
           </IconButton>
           <Menu
             id="long-menu"
@@ -264,7 +279,7 @@ export default function ShowDashBoard1() {
                 value={detailLineUnitgroup}
                 onChange={(event) => setDetailLineUnitGroup(event.target.value)}
               >
-                <MenuItem value="">
+                <MenuItem value="GroupLine">
                   <em>None</em>
                 </MenuItem>
                 {unitgroup.map((option: any) => (
@@ -286,7 +301,7 @@ export default function ShowDashBoard1() {
                 label="Line"
                 onChange={(event: any) => setDetailLine(event.target.value)}
               >
-                <MenuItem value="">
+                <MenuItem value="Line">
                   <em>None</em>
                 </MenuItem>
                 {dataLineFilter
@@ -303,7 +318,73 @@ export default function ShowDashBoard1() {
             </FormControl>
           </Menu>
         </div>
-        <div></div>
+        <div>
+          <Typography sx={{ textAlign: "right", color: "white" }}>
+            {languagesUP.toUpperCase()}
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleMenulanguage}
+              color="inherit"
+            >
+              <LanguageSharpIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={language}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              open={Boolean(language)}
+              onClose={(e) => setLanguage(null)}
+            >
+              <MenuItem
+                onClick={(e) => {
+                  i18n.changeLanguage("th");
+                  setLanguagesUP("th");
+                  setLanguage(null);
+                }}
+              >
+                TH
+              </MenuItem>
+              <MenuItem
+                onClick={(e) => {
+                  i18n.changeLanguage("en");
+                  setLanguagesUP("en");
+                  setLanguage(null);
+                }}
+              >
+                EN
+              </MenuItem>
+              <MenuItem
+                onClick={(e) => {
+                  i18n.changeLanguage("cn");
+                  setLanguagesUP("cn");
+                  setLanguage(null);
+                }}
+              >
+                CN
+              </MenuItem>
+              <MenuItem
+                onClick={(e) => {
+                  i18n.changeLanguage("vn");
+                  setLanguagesUP("vn");
+                  setLanguage(null);
+                }}
+              >
+                VN
+              </MenuItem>
+            </Menu>
+          </Typography>
+        </div>
       </div>
       <Grid
         container

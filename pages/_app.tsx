@@ -2,6 +2,8 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { AppcontextProvider } from "../component/zustand.tsx/Appcontext";
 import Head from "next/head";
+import React from "react";
+import "../i18n";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
