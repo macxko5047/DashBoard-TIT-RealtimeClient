@@ -18,7 +18,9 @@ export const ShowProgressWork = (props: {
   // console.log("lineunit", lineunit);
   const [dataUP, setDataUP] = useState<any>([]);
   const [dataShow, setDataShow] = useState<any>([]);
-  console.log({ dataShow });
+  // console.log({ dataShow });
+  const [dataManpower, setDataManpower] = useState<any>("");
+  console.log("dataManpower", dataManpower);
 
   const dataUserID = dataShow[0]?.OP_confirm_before
     ? dataShow[0]?.OP_confirm_before
@@ -105,8 +107,20 @@ export const ShowProgressWork = (props: {
         console.log("fetchData Error  !!!", error);
       }
     };
-
     fetchdata_qty();
+
+    const fetchdataManpower = async () => {
+      let { data: Manpower_record, error } = await supabase
+        .from("Manpower_record")
+        .select("emp_no")
+        .eq("PD_key", pdkey);
+      if (!error) {
+        setDataManpower(Manpower_record?.map((resd: any) => resd.emp_no));
+      } else {
+        console.log("fetchdataManpower", error);
+      }
+    };
+    fetchdataManpower();
 
     setLoading(false);
   }, [pdkey]);
@@ -147,7 +161,11 @@ export const ShowProgressWork = (props: {
       <div className="Distanct">
         NG : {ngShow} / {open_qtyShow} ({ngPercen.toFixed(0)} %)
       </div>
-      <div className="Distanct">PIC : {dataUserID}</div>
+      <div className="Distanct">Leader : {dataUserID}</div>
+      <div className="Distanct" key={dataManpower}>
+        Satff : {dataManpower[0]} &nbsp;{dataManpower[1]}&nbsp;{dataManpower[2]}
+        &nbsp;{dataManpower[3]}&nbsp;{dataManpower[4]}
+      </div>
     </div>
   );
 };
