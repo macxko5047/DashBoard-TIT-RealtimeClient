@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import supabase from "../component_config/supabase";
+import { useTranslation } from "react-i18next";
 
 export const ShowDTRealTime = (props: {
   pdkey: String;
   pdstatus: String;
   detailLine: String;
+  languagesUP: String;
 }) => {
-  const { pdkey, pdstatus, detailLine } = props;
+  const { pdkey, pdstatus, detailLine, languagesUP } = props;
 
   const [ShowDTRT, SetDTRT] = useState<any>("");
   const Today = new Date().toISOString().slice(0, 10);

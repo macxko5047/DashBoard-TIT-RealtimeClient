@@ -5,15 +5,19 @@ import { ShowProgressWork } from "./ShowProgressWork";
 
 import supabase from "../component_config/supabase";
 import Appcontext from "./zustand.tsx/Appcontext";
+import { useTranslation } from "react-i18next";
 
 export const ShowPerformance = (props: {
   pdkey: String;
   pdstatus: String;
   detailLine: String;
+  languagesUP: String;
 }) => {
-  const { pdkey, pdstatus, detailLine } = props;
+  const { pdkey, pdstatus, detailLine, languagesUP } = props;
   // console.log("pdstatus", pdstatus);
+  const { t, i18n } = useTranslation(); //language
   const [lineunit, setLineunit] = useState<String>("");
+
   useEffect(() => {
     if (detailLine) {
       setLineunit(detailLine);
@@ -281,6 +285,7 @@ export const ShowPerformance = (props: {
         await setRuntimeDataSec(RuntimeDataSec);
       }
       const PerformanceBefore = beforPerformance.performancepercent / 100;
+      // console.log(Standard_time);
 
       if (Standard_time && lineunit != "") {
         let Performance_Percen =
@@ -386,7 +391,7 @@ export const ShowPerformance = (props: {
 
   return (
     <div>
-      <div className="NameGauge">Performance</div>
+      <div className="NameGauge">{t("Performance")}</div>
       <GaugeChart
         id="gauge-chart2"
         nrOfLevels={10}
@@ -397,7 +402,7 @@ export const ShowPerformance = (props: {
         textColor={"#FFFFFF "}
         formatTextValue={(value) => `${parseFloat(Number(value).toFixed(0))}%`}
       />{" "}
-      <div className="NameGauge">Availability</div>
+      <div className="NameGauge">{t("Availability")}</div>
       <GaugeChart
         id="gauge-chart3"
         nrOfLevels={10}

@@ -4,19 +4,22 @@ import GaugeChart from "react-gauge-chart";
 import supabase from "../component_config/supabase";
 import Appcontext from "./zustand.tsx/Appcontext";
 import { ShowPerformance } from "./ShowPerformance";
+import { useTranslation } from "react-i18next";
 
 export const ShowOEE = (props: {
   pdkey: String;
   pdstatus: String;
   detailLine: String;
+  languagesUP: String;
 }) => {
   const router = useRouter();
   const linename = router.query.linename || "AHPB-01";
+  const { t, i18n } = useTranslation(); //language
 
   const appcontext: any = useContext(Appcontext);
   // console.log("appcontext Page ShowProgress", appcontext);
   // console.log({ linename });
-  const { pdkey, pdstatus, detailLine } = props;
+  const { pdkey, pdstatus, detailLine, languagesUP } = props;
   const Today = new Date().toISOString().slice(0, 10);
   const [lineunit, setLineunit] = useState<String>("");
   const [beforPerformance, setBeforPerformance] = useState<any>([]);
@@ -417,7 +420,7 @@ export const ShowOEE = (props: {
   }, [appcontext]);
   return (
     <div>
-      <div className="NameGauge">Quality</div>
+      <div className="NameGauge">{t("Quality")}</div>
       <GaugeChart
         id="gauge-chart4"
         nrOfLevels={10}
@@ -428,7 +431,7 @@ export const ShowOEE = (props: {
         textColor={"#FFFFFF "}
         formatTextValue={(value) => `${parseFloat(Number(value).toFixed(0))}%`}
       />
-      <div className="NameGauge">OEE</div>
+      <div className="NameGauge">{t("OEE")}</div>
       <GaugeChart
         id="gauge-chart4"
         nrOfLevels={10}

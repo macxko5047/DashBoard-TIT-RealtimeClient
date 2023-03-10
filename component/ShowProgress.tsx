@@ -2,16 +2,19 @@ import { useEffect, useRef, useState, useContext } from "react";
 import GaugeChart from "react-gauge-chart";
 import supabase from "../component_config/supabase";
 import Appcontext from "./zustand.tsx/Appcontext";
+import { useTranslation } from "react-i18next";
 
 export const ShowProgress = (props: {
   pdstatus: string;
   pdkey: string;
   detailLine: string;
+  languagesUP: string;
 }) => {
-  const { pdkey, pdstatus, detailLine } = props;
+  const { pdkey, pdstatus, detailLine, languagesUP } = props;
   // console.log({ pdstatus });
   // const mounted = useRef(false);
   // const [ShowProgress, SetShowProgress] = useState<any>("");
+  const { t, i18n } = useTranslation(); //language
   const [lineunit, setLineunit] = useState<string>("");
   // console.log("lineunit", lineunit);
   useEffect(() => {
@@ -58,7 +61,7 @@ export const ShowProgress = (props: {
 
   return (
     <div>
-      <div className="NameGauge">Progress</div>
+      <div className="NameGauge">{t("Progress")}</div>
       <GaugeChart
         id="gauge-progress"
         nrOfLevels={1}

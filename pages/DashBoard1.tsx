@@ -33,9 +33,8 @@ export default function ShowDashBoard1() {
   // const [lineunit, setLineunit] = useState<string>("AHPB-01");
   const [unitgroup, setUnitgroup] = useState<any>([]);
   const [dataLineFilter, setDataLineFilter] = useState<any>([]);
-  const [detailLineUnitgroup, setDetailLineUnitGroup] =
-    useState<any>("GroupLine");
-  const [detailLine, setDetailLine] = useState<string>("Line");
+  const [detailLineUnitgroup, setDetailLineUnitGroup] = useState<any>("Group");
+  const [detailLine, setDetailLine] = useState<any>("Line");
   // console.log({ detailLine });
 
   // console.log("unitgroup", unitgroup);
@@ -154,12 +153,11 @@ export default function ShowDashBoard1() {
           position: top;
         }
         .Machine {
-          font-size: 16px;
-          border-radius: 5px;
+          font-size: 15px;
+          border-radius: 10px;
           padding: 10px;
           font-weight: Bold;
-          text-align: center;
-          margin: 1px;
+          text-align: left;
           color: #fff;
           background-color: rgb(49, 49, 49, 0.5);
           position: relative;
@@ -207,7 +205,7 @@ export default function ShowDashBoard1() {
         .Distanct {
           text-align: left;
           padding: 0.5px;
-          padding-left: 10px;
+          padding-left: 1px;
           color: #fff;
         }
         .FootDetail {
@@ -242,9 +240,9 @@ export default function ShowDashBoard1() {
         className={`${ShowUnit[0]?.pdstatus}`}
         style={{ height: 54, fontSize: 36, borderRadius: 0, paddingTop: 6 }}
       >
-        <div className="NameGroup">{detailLineUnitgroup}</div>
+        <div className="NameGroup">{t(detailLineUnitgroup)}</div>
         <div className="NameUnit">
-          {detailLine}
+          {t(detailLine)}
           <IconButton
             aria-label="more"
             id="long-button"
@@ -279,7 +277,7 @@ export default function ShowDashBoard1() {
                 value={detailLineUnitgroup}
                 onChange={(event) => setDetailLineUnitGroup(event.target.value)}
               >
-                <MenuItem value="GroupLine">
+                <MenuItem value="Group">
                   <em>None</em>
                 </MenuItem>
                 {unitgroup.map((option: any) => (
@@ -397,12 +395,17 @@ export default function ShowDashBoard1() {
           <Grid container spacing={1} item lg={12} md={12} xs={12}>
             <Grid item xs={6}>
               <div className={"Machine"}>
-                <div className="Distanct">Work order : {ShowUnit[0]?.woid}</div>
-                <div className="Distanct">Item : {ShowUnit[0]?.itemnumber}</div>
+                <div className="Distanct">
+                  {t("WorkOrder")} : {ShowUnit[0]?.woid}
+                </div>
+                <div className="Distanct">
+                  {t("Item")} : {ShowUnit[0]?.itemnumber}
+                </div>
                 <ShowProgressWork
                   pdkey={String(ShowUnit[0]?.pdkey)}
                   pdstatus={String(ShowUnit[0]?.pdstatus)}
                   detailLine={String(detailLine)}
+                  languagesUP={String(languagesUP)}
                 />
               </div>
             </Grid>
@@ -411,6 +414,7 @@ export default function ShowDashBoard1() {
                 pdkey={String(ShowUnit[0]?.pdkey)}
                 pdstatus={String(ShowUnit[0]?.pdstatus)}
                 detailLine={String(detailLine)}
+                languagesUP={String(languagesUP)}
               />
             </Grid>
             <Grid item xs={6}>
@@ -418,6 +422,7 @@ export default function ShowDashBoard1() {
                 pdkey={String(ShowUnit[0]?.pdkey)}
                 pdstatus={String(ShowUnit[0]?.pdstatus)}
                 detailLine={String(detailLine)}
+                languagesUP={String(languagesUP)}
               />
             </Grid>
             <Grid item xs={6}>
@@ -425,6 +430,7 @@ export default function ShowDashBoard1() {
                 pdkey={String(ShowUnit[0]?.pdkey)}
                 pdstatus={String(ShowUnit[0]?.pdstatus)}
                 detailLine={String(detailLine)}
+                languagesUP={String(languagesUP)}
               />
             </Grid>
           </Grid>
@@ -437,17 +443,26 @@ export default function ShowDashBoard1() {
                 pdkey={String(ShowUnit[0]?.pdkey)}
                 pdstatus={String(ShowUnit[0]?.pdstatus)}
                 detailLine={String(detailLine)}
+                languagesUP={String(languagesUP)}
               />
               <div className={"BgGraph"}>
-                <ShowDowntime detailLine={String(detailLine)} />
+                <ShowDowntime
+                  detailLine={String(detailLine)}
+                  languagesUP={String(languagesUP)}
+                />
               </div>
             </Grid>
           </Grid>
         </Grid>
         <Grid item xs={12}>
           <div className={"Machine"}>
-            <div className={`${ShowUnit[0]?.pdstatus}`}>History work today</div>
-            <ShowWO detailLine={String(detailLine)} />
+            <div className={`${ShowUnit[0]?.pdstatus}`}>
+              {t("HistoryWorkToday")}
+            </div>
+            <ShowWO
+              detailLine={String(detailLine)}
+              languagesUP={String(languagesUP)}
+            />
           </div>
         </Grid>
       </Grid>

@@ -2,16 +2,18 @@ import React, { useEffect, useState, useContext } from "react";
 import supabase from "../component_config/supabase";
 import Appcontext from "./zustand.tsx/Appcontext";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 export const ShowProgressWork = (props: {
   pdkey: string;
   pdstatus: string;
   detailLine: string;
+  languagesUP: string;
 }) => {
-  const { pdkey, pdstatus, detailLine } = props;
+  const { pdkey, pdstatus, detailLine, languagesUP } = props;
 
   console.log({ detailLine });
-
+  const { t, i18n } = useTranslation(); //language
   const Today = new Date().toISOString().slice(0, 10);
   const appcontext: any = useContext(Appcontext);
   const [lineunit, setLineunit] = useState<string>();
@@ -161,9 +163,12 @@ export const ShowProgressWork = (props: {
       <div className="Distanct">
         NG : {ngShow} / {open_qtyShow} ({ngPercen.toFixed(0)} %)
       </div>
-      <div className="Distanct">Leader : {dataUserID}</div>
+      <div className="Distanct">
+        {t("Leader")} : {dataUserID}
+      </div>
       <div className="Distanct" key={dataManpower}>
-        Staff : {dataManpower[0]} &nbsp;{dataManpower[1]}&nbsp;{dataManpower[2]}
+        {t("Staff")} : {dataManpower[0]} &nbsp;{dataManpower[1]}&nbsp;
+        {dataManpower[2]}
         &nbsp;{dataManpower[3]}&nbsp;{dataManpower[4]}
       </div>
     </div>

@@ -66,6 +66,18 @@ const resources = {
       Dashboard: "แผงควบคุม",
       RegisterUser: "สมัครสมาชิกพนักงาน",
       SelectWorkOrder: "เลือกใบสั่งงาน",
+      //=================== 3 ================================
+      Line: "ไลน์ผลิต",
+      Group: "กลุ่ม",
+      Leader: "หัวหน้างาน",
+      Staff: "พนักงาน",
+      Progress: "ความคืบหน้า",
+      Performance: "ประสิทธิ์ภาพการทำงาน",
+      Quality: "คุณภาพการทำงาน",
+      Availability: "ความพร้อมในการทำงาน",
+      OEE: "ประสิทธ์ภาพโดยรวม",
+      DowntimeReason: "เหตุผลที่เกิดเวลาสูญเสีย",
+      HistoryWorkToday: "ประวัติการทำงานของวันนี้",
     },
   },
   en: {
@@ -92,6 +104,8 @@ const resources = {
       ItemRun: "Item Run",
       RegisterUser: "Register User",
       SelectWorkOrder: "Select Work Order",
+      DowntimeReason: "Down time Reason",
+      HistoryWorkToday: "History Work Today",
     },
   },
   cn: {

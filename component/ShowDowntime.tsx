@@ -1,14 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import supabase from "../component_config/supabase";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import { useTranslation } from "react-i18next";
+
 // import { Chart, ChartItem } from "chart.js";
 import { Chart, ChartItem, registerables, ChartType } from "chart.js";
 Chart.register(...registerables);
 
-export const ShowDowntime = (props: { detailLine: String }) => {
+export const ShowDowntime = (props: {
+  detailLine: String;
+  languagesUP: String;
+}) => {
   const [Downtime, SetDTData] = useState<any>([]);
   const Today = new Date().toISOString().slice(0, 10);
-  const { detailLine } = props;
+  const { detailLine, languagesUP } = props;
+
+  const { t, i18n } = useTranslation(); //language
   const [lineunit, setLineunit] = useState<String>("");
 
   useEffect(() => {
@@ -65,12 +72,14 @@ export const ShowDowntime = (props: { detailLine: String }) => {
         ((Number(row.duration) / Number(row.alldt)) * 100).toFixed(1) +
         "%" +
         " " +
-        (Number(row.duration) / 60).toFixed(2) +
-        "h"
+        (Number(row.duration) / 60).toFixed(0) +
+        "h:" +
+        (Number(row.duration) % 60) +
+        "m"
     ),
     datasets: [
       {
-        label: "Down time reason",
+        label: t("DowntimeReason"),
         data: Downtime.map((row: { duration: Number }) => row.duration),
       },
     ],
@@ -95,7 +104,7 @@ export const ShowDowntime = (props: { detailLine: String }) => {
         plugins: {
           title: {
             display: true,
-            text: "Down time Reason",
+            text: t("DowntimeReason"),
             color: ["rgb(255, 255, 255)"],
             font: {
               size: 20,
@@ -103,7 +112,6 @@ export const ShowDowntime = (props: { detailLine: String }) => {
               family: "serif",
             },
             padding: {
-              top: -2,
               right: 1,
               bottom: 16,
               left: 2,
@@ -150,7 +158,7 @@ export const ShowDowntime = (props: { detailLine: String }) => {
     return function cleanup() {
       myLineChart.destroy();
     };
-  }, [Downtime]);
+  }, [Downtime, languagesUP]);
 
   return (
     <div>

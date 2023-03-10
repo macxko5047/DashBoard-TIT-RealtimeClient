@@ -9,14 +9,16 @@ import {
 } from "@mui/material";
 import React, { useEffect, useRef, useState } from "react";
 import supabase from "../component_config/supabase";
+import { useTranslation } from "react-i18next";
 
-export const ShowWO = (props: { detailLine: String }) => {
+export const ShowWO = (props: { detailLine: String; languagesUP: string }) => {
   const mounted = useRef(false);
   const [GetWoLine, SetWoLine] = useState<any>([]);
   // console.log({ GetWoLine });
-  const { detailLine } = props;
+  const { detailLine, languagesUP } = props;
 
   const Today = new Date().toISOString().slice(0, 10);
+  const { t, i18n } = useTranslation(); //language
   const [lineunit, setLineunit] = useState<String>("");
 
   useEffect(() => {
@@ -87,19 +89,23 @@ export const ShowWO = (props: { detailLine: String }) => {
         >
           <TableHead>
             <TableRow>
-              <TableCell style={{ color: "#FFFFFF" }}>Work order</TableCell>
-              <TableCell style={{ color: "#FFFFFF" }}>Item number</TableCell>
-              <TableCell style={{ color: "#FFFFFF" }} align="right">
-                Availability
+              <TableCell style={{ color: "#FFFFFF" }}>
+                {t("WorkOrder")}
+              </TableCell>
+              <TableCell style={{ color: "#FFFFFF" }}>
+                {t("ItemNumber")}
               </TableCell>
               <TableCell style={{ color: "#FFFFFF" }} align="right">
-                Performance
+                {t("Availability")}
               </TableCell>
               <TableCell style={{ color: "#FFFFFF" }} align="right">
-                Quality
+                {t("Performance")}
               </TableCell>
               <TableCell style={{ color: "#FFFFFF" }} align="right">
-                OEE
+                {t("Quality")}
+              </TableCell>
+              <TableCell style={{ color: "#FFFFFF" }} align="right">
+                {t("OEE")}
               </TableCell>
             </TableRow>
           </TableHead>
