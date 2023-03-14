@@ -10,10 +10,12 @@ Chart.register(...registerables);
 export const ShowDowntime = (props: {
   detailLine: String;
   languagesUP: String;
+  pdkey: String;
+  pdstatus: String;
 }) => {
   const [Downtime, SetDTData] = useState<any>([]);
   const Today = new Date().toISOString().slice(0, 10);
-  const { detailLine, languagesUP } = props;
+  const { detailLine, languagesUP, pdkey, pdstatus } = props;
 
   const { t, i18n } = useTranslation(); //language
   const [lineunit, setLineunit] = useState<String>("");
@@ -39,6 +41,7 @@ export const ShowDowntime = (props: {
     const { data, error } = await supabase.rpc("showdtline", {
       prounit: lineunit,
       pdate: Today,
+      pdkeys: pdkey,
     });
     if (!error) {
       SetDTData(data);
@@ -57,7 +60,10 @@ export const ShowDowntime = (props: {
     };
 
     fetchDataDT();
-  }, [lineunit]);
+    if (pdstatus == "Offline") {
+      SetDTData([]);
+    }
+  }, [lineunit, pdstatus]);
 
   const dataDT = {
     labels: Downtime.map(

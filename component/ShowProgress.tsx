@@ -50,7 +50,7 @@ export const ShowProgress = (props: {
       }
 
       if (pdstatus == "Offline") {
-        console.log("test return");
+        // console.log("test return");
 
         setProgressShow(0);
       }

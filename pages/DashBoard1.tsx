@@ -51,7 +51,7 @@ export default function ShowDashBoard1() {
   //--------------------------------------------------------------
   // Data Line
 
-  const ProductionUnitGroup = supabase
+  const ProductionUnitGroupRealtimeEIEI = supabase
     .channel("custom-pdunit-channelcheckUnitGroupLine")
     .on(
       "postgres_changes",
@@ -454,7 +454,7 @@ export default function ShowDashBoard1() {
           <Grid
             item
             xs={12}
-            sx={{ display: "flex", height: 120, width: "auto" }}
+            sx={{ display: "flex", height: 100, width: "auto" }}
           >
             <Grid>
               <ShowDTRealTime
@@ -467,6 +467,8 @@ export default function ShowDashBoard1() {
                 <ShowDowntime
                   detailLine={String(detailLine)}
                   languagesUP={String(languagesUP)}
+                  pdkey={String(ShowUnit[0]?.pdkey)}
+                  pdstatus={String(ShowUnit[0]?.pdstatus)}
                 />
               </div>
               <div className={"BgGraph1"}>
