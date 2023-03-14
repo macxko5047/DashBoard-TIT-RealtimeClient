@@ -18,9 +18,11 @@ import FormControl from "@mui/material/FormControl";
 import { Typography } from "@mui/material";
 import LanguageSharpIcon from "@mui/icons-material/LanguageSharp";
 import { useTranslation } from "react-i18next";
+import ShowAllDay from "../component/ShowAllDay";
 
 export default function ShowDashBoard1() {
   //========= language =====================================
+
   const { t, i18n } = useTranslation(); //language
   const [languagesUP, setLanguagesUP] = useState<any>("en");
   const [language, setLanguage] = useState<null | HTMLElement>(null);
@@ -60,8 +62,7 @@ export default function ShowDashBoard1() {
         filter: "PD_line=eq." + detailLine,
       },
       (payload) => {
-        console.log("custom-pdunit-channelasde", payload);
-
+        console.log("custom-pdunit-DashBoard1", payload);
         fetchShowUnit();
       }
     )
@@ -153,21 +154,33 @@ export default function ShowDashBoard1() {
           position: top;
         }
         .Machine {
-          font-size: 15px;
+          font-size: 14px;
           border-radius: 10px;
           padding: 10px;
           font-weight: Bold;
-          text-align: left;
+          text-align: center;
           color: #fff;
           background-color: rgb(49, 49, 49, 0.5);
           position: relative;
         }
+
         .BgGraph {
           border-radius: 5px;
           padding: 10px;
           font-weight: Bold;
           text-align: center;
           margin: 5px;
+          color: #fff;
+          background-color: rgb(49, 49, 49, 0.15);
+          position: relative;
+        }
+        .BgGraph1 {
+          font-family: verdana;
+          border-radius: 5px;
+          padding: 1px;
+          font-weight: Bold;
+          text-align: center;
+          margin: 1px;
           color: #fff;
           background-color: rgb(49, 49, 49, 0.15);
           position: relative;
@@ -406,6 +419,7 @@ export default function ShowDashBoard1() {
                   pdstatus={String(ShowUnit[0]?.pdstatus)}
                   detailLine={String(detailLine)}
                   languagesUP={String(languagesUP)}
+                  workid={String(ShowUnit[0]?.woid)}
                 />
               </div>
             </Grid>
@@ -437,7 +451,7 @@ export default function ShowDashBoard1() {
         </Grid>
 
         <Grid item xs={5}>
-          <Grid item xs={12}>
+          <Grid item xs={12} sx={{ display: "flex", height: 150 }}>
             <Grid>
               <ShowDTRealTime
                 pdkey={String(ShowUnit[0]?.pdkey)}
@@ -451,10 +465,18 @@ export default function ShowDashBoard1() {
                   languagesUP={String(languagesUP)}
                 />
               </div>
+              <div className={"BgGraph1"}>
+                <ShowAllDay
+                  pdkey={String(ShowUnit[0]?.pdkey)}
+                  pdstatus={String(ShowUnit[0]?.pdstatus)}
+                  detailLine={String(detailLine)}
+                  languagesUP={String(languagesUP)}
+                />
+              </div>
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={12}>
+        <Grid item xs={12} sx={{ marginTop: "18px" }}>
           <div className={"Machine"}>
             <div className={`${ShowUnit[0]?.pdstatus}`}>
               {t("HistoryWorkToday")}

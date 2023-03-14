@@ -39,7 +39,10 @@ export const ShowOEE = (props: {
 
     const celculateAll = async () => {
       const Qualitypercent: number = OK_qty / (OK_qty + NG_qty);
-      setQuality(Qualitypercent);
+
+      if (pdstatus == "Online" || pdstatus == "Downtime") {
+        setQuality(Qualitypercent);
+      }
     };
     if (OK_qty) {
       celculateAll();
@@ -63,31 +66,6 @@ export const ShowOEE = (props: {
 
   const qualityBefore = beforPerformance.quality;
   // console.log({ qualityBefore });
-  useEffect(() => {
-    if (qualityBefore != undefined) {
-      if (quality == 0) {
-        if (pdstatus == "Online" || pdstatus == "Downtime") {
-          setQualityAll(qualityBefore);
-        }
-      }
-      if (qualityBefore > 0 && quality != 0) {
-        const QualityAll = (qualityBefore + quality * 100) / 2;
-        //*100 เพราะ ค่า quality = 1 ไม่ใช่ 100
-        // console.log({ QualityAll });
-        if (pdstatus == "Online" || pdstatus == "Downtime") {
-          setQualityAll(QualityAll);
-        }
-      }
-      if (qualityBefore == 0) {
-        const QualityAll = qualityBefore + quality * 100;
-        //*100 เพราะ ค่า quality = 1 ไม่ใช่ 100
-        // console.log({ QualityAll });
-        if (pdstatus == "Online" || pdstatus == "Downtime") {
-          setQualityAll(QualityAll);
-        }
-      }
-    }
-  }, [quality, qualityBefore]);
 
   const fetchRuntime = async () => {
     const { data, error } = await supabase
@@ -202,6 +180,7 @@ export const ShowOEE = (props: {
   const [loading, setLoading] = useState(false);
   // const [ShowProgress, SetShowProgress] = useState<any>("");
   // const [dataPer, setDataPer] = useState<any>(0);
+
   useEffect(() => {
     const DowntimeRecord = supabase
       .channel("custom-all-DowntimeRealtimeDashboard")
@@ -336,35 +315,31 @@ export const ShowOEE = (props: {
           (await (Standard_time * (OK_qty + NG_qty))) / RuntimeDataSec;
 
         if (Performance_Percen != null) {
-          if (PerformanceBefore > 0) {
-            const PerformanceAll = (Performance_Percen + PerformanceBefore) / 2;
-            // console.log({ PerformanceAll });
-            await setPerformancePercent(PerformanceAll);
-          }
-          if (PerformanceBefore == 0) {
-            await setPerformancePercent(Performance_Percen);
-          }
+          await setPerformancePercent(Performance_Percen);
         }
       }
 
       //================= Availability_percent =======================
-      const AvailabilityBefore = beforPerformance.availability;
+
       const durationBreakDowntime = beforPerformance.durationbraekdowntime;
       if (RuntimeData > 0 && timeStampStart > 0) {
         const Ap =
           RuntimeData /
           (durationReal - durationBreakDowntime - downtimeBreakNew);
+        // (durationReal - durationBreakDowntime - downtimeBreakNew);
+        // console.log({ Ap });
+        // console.log(
+        //   "AP ตัวมันเอง",
+        //   RuntimeData,
+        //   durationReal,
+        //   durationBreakDowntime,
+        //   downtimeBreakNew
+        // );
+
         //1 = 100% เลยต้องแปลง เป็น 100ด้วยการคูณ *100
-        if (Ap != null) {
-          if (AvailabilityBefore > 0) {
-            const AvailabilityAll = (Ap * 100 + AvailabilityBefore) / 2;
-            // console.log({ AvailabilityAll });
-            await setApPercent(AvailabilityAll);
-          }
-          if (AvailabilityBefore == 0) {
-            const AvailabilityAll = Ap * 100 + AvailabilityBefore;
-            // console.log({ AvailabilityAll });
-            await setApPercent(AvailabilityAll);
+        if (Ap != null && lineunit != "") {
+          if (pdstatus == "Downtime" || pdstatus == "Online") {
+            await setApPercent(Ap * 100);
           }
         }
       }
@@ -372,9 +347,7 @@ export const ShowOEE = (props: {
 
       //------------------------------------------------------------
       //========== OEE percent ===============================
-      const OeeBefore = beforPerformance.oeepercent / 100;
-      const oeeCel =
-        performancePercent * (apPercent / 100) * (qualityAll / 100);
+      const oeeCel = performancePercent * (apPercent / 100) * quality;
       // console.log({ oeeCel });
 
       if (oeeCel != null) {
@@ -387,11 +360,8 @@ export const ShowOEE = (props: {
     };
     testaall();
     if (pdstatus == "Offline") {
-      const getdataOeeAll = beforPerformance.oeepercent;
-      if (getdataOeeAll > 0) {
-        setOeeAll(beforPerformance.oeepercent / 100);
-        setQualityAll(beforPerformance.quality);
-      }
+      setOeeAll(0);
+      setQuality(0);
     }
   }, [dateState]);
 
@@ -424,7 +394,7 @@ export const ShowOEE = (props: {
       <GaugeChart
         id="gauge-chart4"
         nrOfLevels={10}
-        percent={qualityAll / 100}
+        percent={quality}
         colors={["#EA4228", "#5BE12C"]}
         needleBaseColor={"#FFFFFF"}
         needleColor={"#FFFFFF"}

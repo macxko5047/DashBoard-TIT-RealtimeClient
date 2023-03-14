@@ -25,7 +25,7 @@ export const ShowDowntime = (props: {
   }, [detailLine]);
 
   const DowntimeRecord = supabase
-    .channel("custom-downtime-channel")
+    .channel("custom-downtime-Downtime_RecordShow")
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: "Downtime_record" },

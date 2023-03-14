@@ -71,7 +71,7 @@ export const ShowDTRealTime = (props: {
             display: block;
             text-align: center;
             border-radius: 5px;
-            padding: 4px;
+            padding: 1px;
             margin-top: 3px;
             font-weight: Bold;
             color: #fff;

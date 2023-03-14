@@ -78,6 +78,15 @@ const resources = {
       OEE: "ประสิทธ์ภาพโดยรวม",
       DowntimeReason: "เหตุผลที่เกิดเวลาสูญเสีย",
       HistoryWorkToday: "ประวัติการทำงานของวันนี้",
+      //=================== 4 ======================================
+      Downtimecode: "โค้ด เวลาสูญเสีย",
+      Begintime: "เวลาเริ่ม",
+      Endtime: "เวลาจบ",
+      Durationdowntime: "เวลาที่สูญเสีย",
+      CodeNG: "โค้ดชิ้นงานเสีย",
+      Description: "คำอธิบาย",
+      PartComponent: "ชิ้นส่วนประกรอบ",
+      Delete: "ลบ",
     },
   },
   en: {
@@ -106,6 +115,12 @@ const resources = {
       SelectWorkOrder: "Select Work Order",
       DowntimeReason: "Down time Reason",
       HistoryWorkToday: "History Work Today",
+      Downtimecode: "Downtime Code",
+      Begintime: "Begin time",
+      Endtime: "End time",
+      Durationdowntime: "Duration downtime",
+      CodeNG: "Code NG",
+      PartComponent: "Part Component",
     },
   },
   cn: {

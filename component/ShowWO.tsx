@@ -27,7 +27,7 @@ export const ShowWO = (props: { detailLine: String; languagesUP: string }) => {
     }
   }, [detailLine]);
 
-  const ProductionHistory = supabase
+  const ProductionHistoryWO = supabase
     .channel("custom-filter-channelWorkOrderUpDate")
     .on(
       "postgres_changes",

@@ -1,32 +1,92 @@
-import { load } from "@amcharts/amcharts5/.internal/core/util/Net";
 import React, { useEffect, useState, useContext } from "react";
-import GaugeChart from "react-gauge-chart";
-import { ShowProgressWork } from "./ShowProgressWork";
-import DashBoard from "../pages/DashBoard1";
 import supabase from "../component_config/supabase";
 import Appcontext from "./zustand.tsx/Appcontext";
-import { useTranslation } from "react-i18next";
+import DashBoard from "../pages/DashBoard1";
+import { useRouter } from "next/router";
 
-export const ShowPerformance = (props: {
+type Props = {
   pdkey: String;
   pdstatus: String;
   detailLine: String;
   languagesUP: String;
-}) => {
+};
+
+const ShowAllDay = (props: Props) => {
+  const router = useRouter();
+  const linename = router.query.linename || "AHPB-01";
+
+  const appcontext: any = useContext(Appcontext);
+  // console.log("appcontext Page ShowProgress", appcontext);
+  // console.log({ linename });
   const { pdkey, pdstatus, detailLine, languagesUP } = props;
-  // console.log("pdstatus", pdstatus);
-  const { t, i18n } = useTranslation(); //language
+  const Today = new Date().toISOString().slice(0, 10);
   const [lineunit, setLineunit] = useState<String>("");
+  const [beforPerformance, setBeforPerformance] = useState<any>([]);
 
+  const [quality, setQuality] = useState<number>(0);
+  // console.log({ quality });
+
+  const [qualityAll, setQualityAll] = useState<number>(0);
+  // console.log({ qualityAll });
+  let [oeeAll, setOeeAll] = useState<any>(0);
+  // console.log({ oeeAll });
+
+  // console.log({ beforPerformance });
   useEffect(() => {
-    if (detailLine) {
-      setLineunit(detailLine);
-    }
-  }, [detailLine]);
+    const OK_qty: number = appcontext.appstate[0]?.OK_qty;
+    const NG_qty: number = appcontext.appstate[0]?.NG_qty;
 
-  const [ShowDTRT, SetDTRT] = useState<any>("");
-  // console.log(ShowDTRT[0]?.dtstart);
-  const [dateState, useDateState] = useState(new Date());
+    const celculateAll = async () => {
+      const Qualitypercent: number = OK_qty / (OK_qty + NG_qty);
+      setQuality(Qualitypercent);
+    };
+    if (OK_qty) {
+      celculateAll();
+    }
+
+    const fetdatacelperformance = async () => {
+      let { data, error } = await supabase.rpc("onperformance", {
+        pdate: Today,
+        prounit: lineunit,
+        pd_key: pdkey,
+      });
+
+      if (error) console.error(error);
+      // console.log("onperformance Success :D", data);
+      else setBeforPerformance(data);
+    };
+    if (appcontext.appstate[0]?.PD_key != undefined) {
+      fetdatacelperformance();
+    }
+  }, [appcontext]);
+
+  const qualityBefore = beforPerformance.quality;
+  // console.log({ qualityBefore });
+  useEffect(() => {
+    if (qualityBefore != undefined) {
+      if (quality == 0) {
+        if (pdstatus == "Online" || pdstatus == "Downtime") {
+          setQualityAll(qualityBefore);
+        }
+      }
+      if (qualityBefore > 0 && quality != 0) {
+        const QualityAll = (qualityBefore + quality * 100) / 2;
+        //*100 เพราะ ค่า quality = 1 ไม่ใช่ 100
+        // console.log({ QualityAll });
+        if (pdstatus == "Online" || pdstatus == "Downtime") {
+          setQualityAll(QualityAll);
+        }
+      }
+      if (qualityBefore == 0) {
+        const QualityAll = qualityBefore + quality * 100;
+        //*100 เพราะ ค่า quality = 1 ไม่ใช่ 100
+        // console.log({ QualityAll });
+        if (pdstatus == "Online" || pdstatus == "Downtime") {
+          setQualityAll(QualityAll);
+        }
+      }
+    }
+  }, [quality, qualityBefore]);
 
   const fetchRuntime = async () => {
     const { data, error } = await supabase
@@ -42,12 +102,15 @@ export const ShowPerformance = (props: {
       setDataduDownTime(data.map((files) => files.Duration_downtime));
     }
   };
-  //========== data get DowntimeCode มาเช็คข้อมูล ================
+  //===========get performent ,Availability ===============================
+  const [ShowDTRT, SetDTRT] = useState<any>("");
+  // console.log(ShowDTRT[0]?.dtstart);
+  const [dateState, useDateState] = useState(new Date());
+  //=====================================================================
+
   const [dataCheckCode, setDataCheckCode] = useState<any>("");
 
   // console.log("dataCheckCode", dataCheckCode);
-
-  //-----------------------------------------------------------
 
   useEffect(() => {
     const fetchDTRealTime = async () => {
@@ -60,7 +123,9 @@ export const ShowPerformance = (props: {
     };
     fetchDTRealTime();
     fetchRuntime();
-    fetdatacelperformance();
+    if (pdstatus == "Offline") {
+      fetdatacelperformance();
+    }
 
     const fetchCodeDowntime = async () => {
       let { data: Downtime_record, error } = await supabase
@@ -81,14 +146,15 @@ export const ShowPerformance = (props: {
       setDataCheckCode({ Downtime_code: "กด Downtime ก่อนค่อยดูโว้ยยย" });
     }
   }, [pdstatus]);
-  const Today = new Date().toISOString().slice(0, 10);
+  // console.log({ beforPerformance });
+
   const st = new Date(Today + " " + ShowDTRT[0]?.dtstart);
   const en = new Date(dateState);
   //ค่า ที่นับเป็น นาที ของ Donwtime แล้วเอามาบวก กับ Downtime ทั้งหมดของ Work ก่อนหน้านี้
   const [downtimeNumNew, setDowntimeNumNew] = useState<number>(0);
   const [downtimeBreakNew, setDowntimeBreakNew] = useState<number>(0);
-  // console.log("downtimeNumNew", downtimeNumNew);
-  // console.log("downtimeBreakNew ", downtimeBreakNew);
+  //  console.log("downtimeNumNew", downtimeNumNew);
+  //  console.log("downtimeBreakNew ", downtimeBreakNew);
 
   // console.log("เวลาเริ่มดาวทาม ", ShowDTRT[0]?.dtstart);
 
@@ -101,9 +167,7 @@ export const ShowPerformance = (props: {
     msec -= mm * 1000 * 60;
     let ss = Math.floor(msec / 1000);
     msec -= ss * 1000;
-
     let DiffTime = Number(mm.toString().padStart(2, "0"));
-
     if (pdstatus == "Downtime" && dataCheckCode) {
       if (
         dataCheckCode == "Z01" ||
@@ -114,6 +178,7 @@ export const ShowPerformance = (props: {
         setDowntimeNumNew(0);
       } else {
         setDowntimeNumNew(DiffTime);
+        setDowntimeBreakNew(0);
       }
     }
     if (pdstatus == "Online") {
@@ -129,8 +194,7 @@ export const ShowPerformance = (props: {
     setInterval(() => useDateState(new Date()), 1000);
   }, []);
 
-  const appcontext: any = useContext(Appcontext);
-
+  const TimeStart: any = date.getTime;
   // console.log("appcontext Page ShowProgress", appcontext);
   const PD_key: any = appcontext.appstate[0]?.PD_key;
   // console.log("PD_key", PD_key);
@@ -138,8 +202,8 @@ export const ShowPerformance = (props: {
   // const [ShowProgress, SetShowProgress] = useState<any>("");
   // const [dataPer, setDataPer] = useState<any>(0);
 
-  const DowntimeRecord = supabase
-    .channel("custom-all-DowntimeShowPerformance")
+  const DowntimeRecordShowAll = supabase
+    .channel("custom-all-DowntimeShowALL")
     .on(
       "postgres_changes",
       {
@@ -150,11 +214,13 @@ export const ShowPerformance = (props: {
       },
       (payload) => {
         setLoading(true);
-        console.log("Change received! DowntimeRealtimeDashboard", payload);
+        console.log(
+          "Change received! DowntimeRealtimeDashboardShowALL",
+          payload
+        );
         if (appcontext.appstate[0]?.PD_key != undefined) {
           fetdatacelperformance();
         }
-
         setLoading(false);
       }
     )
@@ -172,7 +238,6 @@ export const ShowPerformance = (props: {
     else setBeforPerformance(data);
   };
 
-  const [beforPerformance, setBeforPerformance] = useState<any>([]);
   // console.log({ beforPerformance });
 
   //ทำ เวลา แบบเรียวทามเอาไว้คิด performent percent แบบเรียวทามจาก client
@@ -191,41 +256,17 @@ export const ShowPerformance = (props: {
   }, [appcontext]);
 
   const [timeStampStart, setTimeStampStart] = useState<any>(0);
-  const [realtimeNakub, setRealtimeNakub] = useState<string>("");
-  // console.log("realtimeNakub", realtimeNakub);
   // console.log("timeStampStart", timeStampStart);
   const realtime = date.getTime(dateState);
-
-  useEffect(() => {
-    let diff = realtime - timeStampStart;
-
-    let hh = Math.floor(diff / 1000 / 60 / 60);
-    diff -= hh * 1000 * 60 * 60;
-    let mm = Math.floor(diff / 1000 / 60);
-    diff -= mm * 1000 * 60;
-    let ss = Math.floor(diff / 1000);
-    diff -= ss * 1000;
-
-    let DiffTime =
-      hh.toString().padStart(2, "0") +
-      ":" +
-      mm.toString().padStart(2, "0") +
-      ":" +
-      ss.toString().padStart(2, "0");
-
-    setRealtimeNakub(DiffTime);
-  }, [realtime]);
 
   const Standard_time = appcontext.appstate[0]?.Standard_time;
   const OK_qty = appcontext.appstate[0]?.OK_qty;
   const NG_qty = appcontext.appstate[0]?.NG_qty;
-
   // console.log({ Standard_time });
   //=================================================================
   //======== หาDowntime ตัวที่ทำอยู่ ===================================
 
   // console.log({ codeAll });
-
   useEffect(() => {
     const fetchRuntime = async () => {
       const { data, error } = await supabase
@@ -243,7 +284,11 @@ export const ShowPerformance = (props: {
     };
 
     fetchRuntime();
-  }, [pdkey]);
+
+    if (detailLine) {
+      setLineunit(detailLine);
+    }
+  }, [pdkey, detailLine]);
   const [dataduDownTime, setDataduDownTime] = useState<any>([]);
   // console.log({ dataduDownTime });
   // console.log("pdkey", pdkey);
@@ -260,18 +305,17 @@ export const ShowPerformance = (props: {
   //------------------------------------------------------------------
   let [durationRealtime, setDurationRealtime] = useState<any>(0);
   // console.log({ durationRealtime });
-  let [runtimeData, setRuntimeData] = useState<number>(0);
-
+  let [runtimeData, setRuntimeData] = useState<any>(0);
   // console.log({ runtimeData });
   let [runtimeDataSec, setRuntimeDataSec] = useState<any>(0);
   // console.log({ runtimeDataSec });
-  let [performancePercent, setPerformancePercent] = useState<number>(0);
+  //ใช้เอาไป หาค่า OEE =============================
+  let [performancePercent, setPerformancePercent] = useState<any>(0);
   // console.log({ performancePercent });
-  let [apPercent, setApPercent] = useState<number>(0);
+  let [apPercent, setApPercent] = useState<any>(0);
   // console.log({ apPercent });
-  // const functionShowPerformance = () => {
-  //   // return <DashBoard performancePercent={Number(performancePercent)} />;
-  // };
+
+  //------------------------------------------------------------
 
   useEffect(() => {
     const testaall = async () => {
@@ -291,6 +335,8 @@ export const ShowPerformance = (props: {
         await setRuntimeData(RuntimeData);
         await setRuntimeDataSec(RuntimeDataSec);
       }
+      const PerformanceBefore = beforPerformance.performancepercent / 100;
+      // console.log(Standard_time);
 
       if (Standard_time && lineunit != "") {
         let Performance_Percen =
@@ -298,13 +344,21 @@ export const ShowPerformance = (props: {
         // console.log({ Performance_Percen });
 
         if (Performance_Percen != null) {
-          // console.log({ PerformanceAll });
-          if (pdstatus == "Downtime" || pdstatus == "Online") {
+          if (PerformanceBefore > 0 && Performance_Percen != 0) {
+            const PerformanceAll = (Performance_Percen + PerformanceBefore) / 2;
+            // console.log({ PerformanceAll });
+            if (pdstatus == "Downtime" || pdstatus == "Online") {
+              await setPerformancePercent(PerformanceAll);
+            }
+          }
+          if (Performance_Percen == 0) {
+            await setPerformancePercent(PerformanceBefore);
+          }
+          if (PerformanceBefore == 0) {
             await setPerformancePercent(Performance_Percen);
           }
         }
       }
-
       //================= Availability_percent =======================
       const AvailabilityBefore = beforPerformance.availability;
       const durationBreakDowntime = beforPerformance.durationbraekdowntime;
@@ -312,34 +366,50 @@ export const ShowPerformance = (props: {
         const Ap =
           RuntimeData /
           (durationReal - durationBreakDowntime - downtimeBreakNew);
-        // (durationReal - durationBreakDowntime - downtimeBreakNew);
-        // console.log({ Ap });
-        // console.log(
-        //   "AP ตัวมันเอง",
-        //   RuntimeData,
-        //   durationReal,
-        //   durationBreakDowntime,
-        //   downtimeBreakNew
-        // );
-
         //1 = 100% เลยต้องแปลง เป็น 100ด้วยการคูณ *100
-        if (Ap != null && lineunit != "") {
-          if (pdstatus == "Downtime" || pdstatus == "Online") {
-            await setApPercent(Ap * 100);
+        if (Ap != null) {
+          if (AvailabilityBefore > 0) {
+            const AvailabilityAll = (Ap * 100 + AvailabilityBefore) / 2;
+            // console.log({ AvailabilityAll });
+            await setApPercent(AvailabilityAll);
+          }
+          if (AvailabilityBefore == 0) {
+            const AvailabilityAll = Ap * 100 + AvailabilityBefore;
+            // console.log({ AvailabilityAll });
+            await setApPercent(AvailabilityAll);
           }
         }
       }
       // console.log("Availability_percent", Ap);
 
       //------------------------------------------------------------
+      //========== OEE percent ===============================
+      const oeeCel =
+        performancePercent * (apPercent / 100) * (qualityAll / 100);
+      // console.log({ oeeCel });
+
+      if (oeeCel != null) {
+        if (pdstatus == "Online" || pdstatus == "Downtime") {
+          setOeeAll(oeeCel);
+        }
+      }
+
+      //------------------------------------------------------
     };
     testaall();
+    if (pdstatus == "Offline") {
+      const getdataOeeAll = beforPerformance.oeepercent;
+      if (getdataOeeAll > 0) {
+        setOeeAll(beforPerformance.oeepercent / 100);
+        setQualityAll(beforPerformance.quality);
+      }
+    }
     const getdataOffline = () => {
       if (pdstatus == "Offline") {
         const getdataPerformance = beforPerformance.performancepercent;
         if (getdataPerformance >= 0) {
-          setPerformancePercent(0);
-          setApPercent(0);
+          setPerformancePercent(beforPerformance.performancepercent / 100);
+          setApPercent(beforPerformance.availability);
         }
       }
 
@@ -349,28 +419,30 @@ export const ShowPerformance = (props: {
       getdataOffline();
     }
   }, [dateState, lineunit]);
-  // console.log("beforPerformance", beforPerformance);
 
   useEffect(() => {
-    setLoading(true);
-    const fetdatacelperformance = async () => {
+    const celculateOee = async () => {};
+    celculateOee;
+  }, [performancePercent, apPercent, qualityAll]);
+
+  const [dataAVG, setDataAVG] = useState<any>([]);
+
+  useEffect(() => {
+    const fetdatatest = async () => {
       let { data, error } = await supabase.rpc("onperformance", {
         pdate: Today,
-        prounit: lineunit,
-        pd_key: pdkey,
+        prounit: linename,
+        pd_key: appcontext.appstate[0]?.PD_key,
       });
 
       if (error) console.error(error);
-      // console.log("onperformance Success :D", data);
-      else setBeforPerformance(data);
+      // console.log("DataAVG", data);
+      else setDataAVG(data);
     };
     if (appcontext.appstate[0]?.PD_key != undefined) {
-      fetdatacelperformance();
+      fetdatatest();
     }
-    setLoading(false);
   }, [appcontext]);
-
-  // console.log({ pdstatus });
 
   if (loading) {
     return <div> Loading ...</div>;
@@ -378,29 +450,18 @@ export const ShowPerformance = (props: {
 
   return (
     <div>
-      <div className="NameGauge">{t("Performance")}</div>
-      <GaugeChart
-        id="gauge-chart2"
-        nrOfLevels={10}
-        percent={performancePercent ? performancePercent : 0}
-        colors={["#EA4228", "#5BE12C"]}
-        needleBaseColor={"#FFFFFF"}
-        needleColor={"#FFFFFF"}
-        textColor={"#FFFFFF "}
-        formatTextValue={(value) => `${parseFloat(Number(value).toFixed(0))}%`}
-      />{" "}
-      <div className="NameGauge">{t("Availability")}</div>
-      <GaugeChart
-        id="gauge-chart3"
-        nrOfLevels={10}
-        percent={(apPercent ? apPercent : 0) / 100}
-        colors={["#EA4228", "#5BE12C"]}
-        needleBaseColor={"#FFFFFF"}
-        needleColor={"#FFFFFF"}
-        textColor={"#FFFFFF "}
-        formatTextValue={(value) => `${parseFloat(Number(value).toFixed(0))}%`}
-      />
-      {/* {functionShowPerformance()} */}
+      <p>
+        Performance :{" "}
+        {((performancePercent ? performancePercent : 0) * 100).toFixed(2)}%
+        &nbsp;&nbsp;&nbsp;Ava : {apPercent.toFixed(2)}%
+      </p>
+      <p>
+        &nbsp;&nbsp;Quality
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;
+        {qualityAll.toFixed(2)}% &nbsp;&nbsp;&nbsp;OEE :{" "}
+        {(oeeAll * 100).toFixed(2)}%{" "}
+      </p>
     </div>
   );
 };
+export default ShowAllDay;

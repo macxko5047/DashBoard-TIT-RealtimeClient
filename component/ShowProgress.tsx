@@ -55,7 +55,7 @@ export const ShowProgress = (props: {
         setProgressShow(0);
       }
     }
-    console.log({ pdstatus });
+    // console.log({ pdstatus });
   }, [appcontext, pdstatus, lineunit]);
   // console.log({ lineunit });
 

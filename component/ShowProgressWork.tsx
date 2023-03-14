@@ -9,10 +9,11 @@ export const ShowProgressWork = (props: {
   pdstatus: string;
   detailLine: string;
   languagesUP: string;
+  workid: string;
 }) => {
-  const { pdkey, pdstatus, detailLine, languagesUP } = props;
+  const { pdkey, pdstatus, detailLine, languagesUP, workid } = props;
 
-  console.log({ detailLine });
+  // console.log({ workid });
   const { t, i18n } = useTranslation(); //language
   const Today = new Date().toISOString().slice(0, 10);
   const appcontext: any = useContext(Appcontext);
@@ -69,19 +70,25 @@ export const ShowProgressWork = (props: {
   }, [pdstatus, appcontext]);
   // console.log({ pdstatus });
 
-  useEffect(() => {
-    const ProductionHistory = supabase
-      .channel("custom-all-channelShoProgressWork")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "Production_history" },
-        (payload) => {
-          console.log("Change received! channelShoProgressWork", payload);
-          setDataUP(payload.new);
-        }
-      )
-      .subscribe();
-  }, []);
+  // useEffect(() => {
+  const ProductionHistoryProgressWork = supabase
+    .channel("custom-all-channelShoProgressWork")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "Production_history",
+        filter: "PD_key=eq." + pdkey,
+      },
+      (payload) => {
+        console.log("Change received! channelShoProgressWork", payload);
+        setDataUP(payload.new);
+      }
+    )
+    .subscribe();
+  // }, []);
+  // console.log({ pdkey });
 
   const [loading, setLoading] = useState(false);
   if (loading) {
@@ -167,9 +174,8 @@ export const ShowProgressWork = (props: {
         {t("Leader")} : {dataUserID}
       </div>
       <div className="Distanct" key={dataManpower}>
-        {t("Staff")} : {dataManpower[0]} &nbsp;{dataManpower[1]}&nbsp;
-        {dataManpower[2]}
-        &nbsp;{dataManpower[3]}&nbsp;{dataManpower[4]}
+        {t("Staff")} : {dataManpower[0]} {dataManpower[1]} {dataManpower[2]}
+        {dataManpower[3]} {dataManpower[4]}
       </div>
     </div>
   );
