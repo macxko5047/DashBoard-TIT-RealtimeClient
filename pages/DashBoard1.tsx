@@ -451,7 +451,11 @@ export default function ShowDashBoard1() {
         </Grid>
 
         <Grid item xs={5}>
-          <Grid item xs={12} sx={{ display: "flex", height: 150 }}>
+          <Grid
+            item
+            xs={12}
+            sx={{ display: "flex", height: 120, width: "auto" }}
+          >
             <Grid>
               <ShowDTRealTime
                 pdkey={String(ShowUnit[0]?.pdkey)}

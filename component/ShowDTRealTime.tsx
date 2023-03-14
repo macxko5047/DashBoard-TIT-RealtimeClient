@@ -67,7 +67,7 @@ export const ShowDTRealTime = (props: {
             display: none;
           }
           .DTSHOW {
-            font-size: 16px;
+            font-size: 15px;
             display: block;
             text-align: center;
             border-radius: 5px;
@@ -82,7 +82,7 @@ export const ShowDTRealTime = (props: {
         <div className="FootDowntime">
           <div className="DTSHOW">
             {ShowDTRT[0]?.dtreason}
-            <div style={{ padding: 1, fontSize: 24 }}>{TimeState}</div>
+            <div style={{ padding: 1, fontSize: 18 }}>{TimeState}</div>
           </div>
         </div>
       </div>
